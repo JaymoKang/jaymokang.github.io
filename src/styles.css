@@ -83,7 +83,7 @@ body {
   align-items: center;
 }
 
-/* ===== SVG Layer - Scrolling wipe transitions ===== */
+/* ===== SVG Layer - Scrolling wave transitions ===== */
 .svg-layer {
   position: fixed;
   top: 0;
@@ -95,22 +95,31 @@ body {
   overflow: hidden;
 }
 
-.transition-svg-wrapper {
+.wave-transition {
   position: absolute;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  transform: translateX(100vw);
-  will-change: transform;
 }
 
-.transition-svg {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center bottom;
+.wave {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 120vw;
+  height: 120vh;
+  transform: translateX(150vw);
+  transform-origin: center center;
+  will-change: transform, opacity;
+  object-fit: contain;
 }
+
+/* Wave stacking order - front waves on top */
+.wave-1 { z-index: 4; }
+.wave-2 { z-index: 3; }
+.wave-3 { z-index: 2; }
+.wave-4 { z-index: 1; }
 
 /* ===== Typography ===== */
 .hero-title {

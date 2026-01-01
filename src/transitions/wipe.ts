@@ -1,14 +1,15 @@
-import type { WipeTransitionConfig, WipeTransitionElements } from '../types';
-import { WIPE_TRANSITION_CONFIG } from '../constants';
+import type { WaveTransitionConfig, WaveTransitionElements } from '../types';
+import { WAVE_TRANSITION_CONFIG } from '../constants';
 import { clamp, easeInOutCubic } from '../utils/math';
 
 /**
- * Controls scroll-driven SVG wipe transitions between content slides
+ * Controls scroll-driven wave transitions between content slides
+ * Waves undulate vertically while traveling horizontally across the screen
  */
-export class WipeTransitionController {
-  private readonly config: WipeTransitionConfig;
+export class WaveTransitionController {
+  private readonly config: WaveTransitionConfig;
   private readonly slideContents: NodeListOf<HTMLElement>;
-  private readonly svgWrappers: NodeListOf<HTMLElement>;
+  private readonly waveTransitions: NodeListOf<HTMLElement>;
   private readonly progressFill: HTMLElement | null;
 
   private readonly totalSlides: number;
@@ -22,16 +23,16 @@ export class WipeTransitionController {
   private readonly handleResize: () => void;
 
   constructor(
-    elements: WipeTransitionElements,
-    config: Partial<WipeTransitionConfig> = {}
+    elements: WaveTransitionElements,
+    config: Partial<WaveTransitionConfig> = {}
   ) {
-    this.config = { ...WIPE_TRANSITION_CONFIG, ...config };
+    this.config = { ...WAVE_TRANSITION_CONFIG, ...config };
     this.slideContents = elements.slideContents;
-    this.svgWrappers = elements.svgWrappers;
+    this.waveTransitions = elements.waveTransitions;
     this.progressFill = elements.progressFill;
 
     this.totalSlides = this.slideContents.length;
-    this.totalTransitions = this.svgWrappers.length;
+    this.totalTransitions = this.waveTransitions.length;
 
     // Bind handlers
     this.handleScroll = this.onScroll.bind(this);
@@ -90,7 +91,7 @@ export class WipeTransitionController {
   }
 
   /**
-   * Updates SVG positions and slide visibility based on scroll position
+   * Updates wave positions and slide visibility based on scroll position
    * Accounts for dwell zones between transitions
    */
   private updateTransitions(): void {
@@ -103,7 +104,7 @@ export class WipeTransitionController {
     // Calculate segment info accounting for dwell zones
     const segmentInfo = this.calculateSegmentInfo(overallProgress);
 
-    this.updateSvgPositions(segmentInfo.activeTransitionIndex, segmentInfo.withinTransitionProgress);
+    this.updateWavePositions(segmentInfo.activeTransitionIndex, segmentInfo.withinTransitionProgress);
     this.updateSlideVisibility(
       overallProgress,
       segmentInfo.activeTransitionIndex,
@@ -128,20 +129,6 @@ export class WipeTransitionController {
     withinTransitionProgress: number;
   } {
     const { dwellRatio } = this.config;
-    
-    // Total segments: slides (dwells) + transitions
-    // Pattern: dwell, trans, dwell, trans, dwell... 
-    // For 3 slides: dwell0, trans0, dwell1, trans1, dwell2 = 5 segments
-    const totalSegments = this.totalSlides + this.totalTransitions;
-    
-    // Calculate the size of each segment type
-    // dwellRatio determines what fraction of total scroll is dwell vs transition
-    const totalDwellRatio = dwellRatio * this.totalSlides;
-    const totalTransitionRatio = (1 - dwellRatio) * this.totalSlides;
-    
-    // Normalize: each dwell and transition segment size
-    const dwellSize = totalDwellRatio / totalSegments;
-    const transitionSize = totalTransitionRatio / totalSegments;
     
     // Simplified: divide equally but scale by ratio
     const singleDwellSize = dwellRatio / this.totalSlides;
@@ -198,29 +185,54 @@ export class WipeTransitionController {
   }
 
   /**
-   * Positions each SVG wrapper based on transition progress
+   * Positions each wave with horizontal translation, vertical undulation, and scale
    */
-  private updateSvgPositions(
+  private updateWavePositions(
     activeIndex: number,
     withinProgress: number
   ): void {
-    this.svgWrappers.forEach((wrapper, index) => {
-      let translateX: number;
+    const { waves, undulationAmplitude, undulationFrequency } = this.config;
 
-      if (index < activeIndex) {
-        // This transition has passed - SVG is off-screen left
-        translateX = -100;
-      } else if (index > activeIndex || activeIndex < 0) {
-        // This transition hasn't started - SVG is off-screen right
-        translateX = 100;
-      } else {
-        // This is the active transition - animate across screen
-        // Start at 100vw (right), end at -100vw (left)
-        const easedProgress = easeInOutCubic(withinProgress);
-        translateX = 100 - easedProgress * 200;
-      }
+    this.waveTransitions.forEach((transition, transitionIndex) => {
+      const waveElements = transition.querySelectorAll<HTMLElement>('.wave');
 
-      wrapper.style.transform = `translateX(${translateX}vw)`;
+      waveElements.forEach((wave, waveIndex) => {
+        const waveConfig = waves[waveIndex] || waves[waves.length - 1];
+        
+        let translateX: number;
+        let translateY: number;
+
+        if (transitionIndex < activeIndex) {
+          // This transition has passed - waves are off-screen left
+          translateX = -150;
+          translateY = 0;
+        } else if (transitionIndex > activeIndex || activeIndex < 0) {
+          // This transition hasn't started - waves are off-screen right
+          translateX = 150;
+          translateY = 0;
+        } else {
+          // This is the active transition - animate waves across screen
+          // Apply stagger to each wave's progress
+          const staggeredProgress = clamp(
+            (withinProgress - waveConfig.stagger) / (1 - waveConfig.stagger),
+            0,
+            1
+          );
+          
+          const easedProgress = easeInOutCubic(staggeredProgress);
+          
+          // Horizontal: Start at 150vw (right), end at -150vw (left)
+          translateX = 150 - easedProgress * 300;
+          
+          // Vertical undulation using sine wave
+          const undulationPhase = staggeredProgress * Math.PI * 2 * undulationFrequency + waveConfig.phaseOffset;
+          translateY = Math.sin(undulationPhase) * undulationAmplitude;
+        }
+
+        // Apply transform with scale
+        wave.style.transform = `translateX(${translateX}vw) translateY(${translateY}vh) scale(${waveConfig.scale})`;
+        wave.style.opacity = String(waveConfig.opacity);
+      });
     });
   }
 
@@ -245,7 +257,7 @@ export class WipeTransitionController {
         // In a dwell zone - only the current slide is visible
         opacity = index === currentSlideIndex ? 1 : 0;
       } else if (index === activeTransitionIndex) {
-        // This is the outgoing slide (being covered by SVG)
+        // This is the outgoing slide (being covered by waves)
         // Fade from 1 → 0 as progress goes from 0 → leadingEdge
         if (withinTransitionProgress <= 0) {
           opacity = 1;
@@ -256,7 +268,7 @@ export class WipeTransitionController {
           opacity = 1 - (withinTransitionProgress / leadingEdge);
         }
       } else if (index === activeTransitionIndex + 1) {
-        // This is the incoming slide (being revealed by SVG)
+        // This is the incoming slide (being revealed by waves)
         // Fade from 0 → 1 as progress goes from trailingEdge → 1
         if (withinTransitionProgress <= trailingEdge) {
           opacity = 0;
@@ -284,4 +296,3 @@ export class WipeTransitionController {
     });
   }
 }
-

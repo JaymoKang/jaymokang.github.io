@@ -1,23 +1,43 @@
 /**
- * Configuration for the wipe transition system
+ * Configuration for individual wave properties
  */
-export interface WipeTransitionConfig {
-  /** Progress threshold when SVG leading edge covers center (0-1) */
+export interface WaveConfig {
+  /** Scale multiplier for wave size (1.0 = 100%) */
+  scale: number;
+  /** Horizontal stagger offset (0-1, delays wave start) */
+  stagger: number;
+  /** Opacity of the wave (0-1) */
+  opacity: number;
+  /** Phase offset for undulation (radians) */
+  phaseOffset: number;
+}
+
+/**
+ * Configuration for the wave transition system
+ */
+export interface WaveTransitionConfig {
+  /** Progress threshold when leading wave covers center (0-1) */
   leadingEdge: number;
-  /** Progress threshold when SVG trailing edge reveals center (0-1) */
+  /** Progress threshold when trailing wave reveals center (0-1) */
   trailingEdge: number;
   /** Ratio of scroll distance spent on dwell vs transition (0-1, e.g., 0.3 = 30% dwell) */
   dwellRatio: number;
   /** Debounce delay for resize handler in milliseconds */
   resizeDebounceMs: number;
+  /** Amplitude of vertical undulation in vh units */
+  undulationAmplitude: number;
+  /** Frequency of undulation (number of complete waves during transition) */
+  undulationFrequency: number;
+  /** Per-wave configuration */
+  waves: WaveConfig[];
 }
 
 /**
- * DOM elements required by the wipe transition controller
+ * DOM elements required by the wave transition controller
  */
-export interface WipeTransitionElements {
+export interface WaveTransitionElements {
   slideContents: NodeListOf<HTMLElement>;
-  svgWrappers: NodeListOf<HTMLElement>;
+  waveTransitions: NodeListOf<HTMLElement>;
   progressFill: HTMLElement | null;
 }
 

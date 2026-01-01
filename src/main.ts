@@ -1,28 +1,28 @@
 /**
- * Personal Website - SVG Wipe Transition System
- * Entry point that initializes the wipe transition controller
+ * Personal Website - Wave Transition System
+ * Entry point that initializes the wave transition controller
  */
 
-import { WipeTransitionController } from './transitions/wipe';
-import type { WipeTransitionElements } from './types';
+import { WaveTransitionController } from './transitions/wipe';
+import type { WaveTransitionElements } from './types';
 
 /**
  * Queries the DOM for required transition elements
  */
-function getTransitionElements(): WipeTransitionElements {
+function getTransitionElements(): WaveTransitionElements {
   return {
     slideContents: document.querySelectorAll<HTMLElement>('.slide-content'),
-    svgWrappers: document.querySelectorAll<HTMLElement>('.transition-svg-wrapper'),
+    waveTransitions: document.querySelectorAll<HTMLElement>('.wave-transition'),
     progressFill: document.querySelector<HTMLElement>('.progress-fill'),
   };
 }
 
 /**
- * Initializes the wipe transition system
+ * Initializes the wave transition system
  */
 function init(): void {
   const elements = getTransitionElements();
-  const controller = new WipeTransitionController(elements);
+  const controller = new WaveTransitionController(elements);
   controller.init();
 }
 
