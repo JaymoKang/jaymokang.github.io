@@ -43,7 +43,7 @@ body {
   color: var(--color-deep-ocean);
   background: var(--color-sand);
   /* Create scroll space for transitions */
-  height: 400vh;
+  height: 1500vh;
   overflow-x: hidden;
 }
 
