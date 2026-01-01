@@ -10,26 +10,20 @@
     <link rel="stylesheet" href="/src/styles.css">
   </head>
   <body>
-    <!-- Hero Slide -->
-    <section class="slide slide-hero" id="hero">
-      <div class="slide-content">
+    <!-- Content Layer - Fixed, stacked slide content -->
+    <div class="content-layer">
+      <!-- Hero Content -->
+      <div class="slide-content" data-slide="0">
         <h1 class="hero-title">Jaymo Kang</h1>
         <p class="hero-subtitle">Developer & Creator</p>
+        <div class="scroll-hint">
+          <span>Scroll to explore</span>
+          <div class="scroll-arrow"></div>
+        </div>
       </div>
-      <div class="scroll-hint">
-        <span>Scroll to explore</span>
-        <div class="scroll-arrow"></div>
-      </div>
-    </section>
 
-    <!-- Mountain Transition -->
-    <div class="transition-zone" id="transition-mountains">
-      <img src="/mountains.svg" alt="" class="transition-svg" aria-hidden="true" />
-    </div>
-
-    <!-- About Slide -->
-    <section class="slide slide-about" id="about">
-      <div class="slide-content">
+      <!-- About Content -->
+      <div class="slide-content" data-slide="1">
         <h2 class="section-title">About Me</h2>
         <p class="about-text">
           I'm a passionate developer who loves building beautiful, 
@@ -42,16 +36,9 @@
           a good book.
         </p>
       </div>
-    </section>
 
-    <!-- Trees Transition -->
-    <div class="transition-zone" id="transition-trees">
-      <img src="/trees.svg" alt="" class="transition-svg" aria-hidden="true" />
-    </div>
-
-    <!-- Contact Slide -->
-    <section class="slide slide-contact" id="contact">
-      <div class="slide-content">
+      <!-- Contact Content -->
+      <div class="slide-content" data-slide="2">
         <h2 class="section-title">Get in Touch</h2>
         <p class="contact-text">
           I'd love to hear from you. Whether you have a project in mind 
@@ -67,13 +54,30 @@
             <span class="link-value">@jaymokang</span>
           </a>
         </div>
+        <footer class="footer">
+          <p>&copy; 2026 Jaymo Kang. All rights reserved.</p>
+        </footer>
       </div>
-      <footer class="footer">
-        <p>&copy; 2026 Jaymo Kang. All rights reserved.</p>
-      </footer>
-    </section>
+    </div>
+
+    <!-- SVG Layer - Scrolling transitions -->
+    <div class="svg-layer">
+      <!-- Mountain Transition (between Hero and About) -->
+      <div class="transition-svg-wrapper" data-transition="0">
+        <img src="/mountains.svg" alt="" class="transition-svg" aria-hidden="true" />
+      </div>
+
+      <!-- Trees Transition (between About and Contact) -->
+      <div class="transition-svg-wrapper" data-transition="1">
+        <img src="/trees.svg" alt="" class="transition-svg" aria-hidden="true" />
+      </div>
+    </div>
+
+    <!-- Progress Indicator -->
+    <div class="progress-bar">
+      <div class="progress-fill"></div>
+    </div>
 
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
-

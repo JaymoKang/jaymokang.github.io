@@ -1,132 +1,152 @@
 /**
- * Personal Website - Scroll-based SVG Animations
- * Animates nature-themed SVGs from right to left as user scrolls
+ * Personal Website - SVG Wipe Transition System
+ * Fixed text content with scrolling SVG wipe transitions
  */
 
-interface TransitionConfig {
-  element: HTMLElement;
-  svg: HTMLImageElement;
-  start: number;
-  end: number;
+interface TransitionState {
+  wrapper: HTMLElement;
+  index: number;
+  progress: number;
 }
 
 /**
- * Calculates the scroll progress within a specific range
- * @returns A value between 0 and 1
+ * Clamps a value between min and max
  */
-function getScrollProgress(scrollY: number, start: number, end: number): number {
-  if (scrollY <= start) return 0;
-  if (scrollY >= end) return 1;
-  return (scrollY - start) / (end - start);
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max);
 }
 
 /**
- * Applies easing function for smoother animation
- * Uses ease-out cubic for natural deceleration
+ * Easing function for smooth animation
  */
-function easeOutCubic(t: number): number {
-  return 1 - Math.pow(1 - t, 3);
+function easeInOutCubic(t: number): number {
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
 
 /**
- * Updates the transform of an SVG based on scroll progress
- * Moves from translateX(100vw) to translateX(-100vw)
+ * Main wipe transition controller
  */
-function updateSvgTransform(svg: HTMLImageElement, progress: number): void {
-  const easedProgress = easeOutCubic(progress);
-  // Start at 100vw (off-screen right), end at -100vw (off-screen left)
-  const translateX = 100 - (easedProgress * 200);
-  svg.style.transform = `translateX(${translateX}vw)`;
-}
+function initWipeTransitions(): void {
+  const slideContents = document.querySelectorAll<HTMLElement>('.slide-content');
+  const svgWrappers = document.querySelectorAll<HTMLElement>('.transition-svg-wrapper');
+  const progressFill = document.querySelector<HTMLElement>('.progress-fill');
 
-/**
- * Sets up scroll-based animations for transition zones
- */
-function initScrollAnimations(): void {
-  const transitionZones = document.querySelectorAll<HTMLElement>('.transition-zone');
-  const transitions: TransitionConfig[] = [];
+  if (slideContents.length === 0) {
+    console.error('No slide content found');
+    return;
+  }
 
-  transitionZones.forEach((zone) => {
-    const svg = zone.querySelector<HTMLImageElement>('.transition-svg');
-    if (!svg) return;
+  const totalSlides = slideContents.length;
+  const totalTransitions = svgWrappers.length;
+  
+  // Each transition takes up 1 "unit" of scroll
+  // We need space for all transitions
+  const scrollUnits = totalTransitions;
+  
+  // Get scroll limits
+  const docHeight = document.documentElement.scrollHeight;
+  const viewportHeight = window.innerHeight;
+  const maxScroll = docHeight - viewportHeight;
 
-    // Calculate the scroll range for this transition
-    const rect = zone.getBoundingClientRect();
-    const scrollTop = window.scrollY;
-    
-    // Start animation when zone enters viewport, end when it leaves
-    const start = scrollTop + rect.top - window.innerHeight;
-    const end = scrollTop + rect.bottom;
-
-    transitions.push({
-      element: zone,
-      svg,
-      start,
-      end,
-    });
-  });
-
-  // Scroll handler with requestAnimationFrame for performance
+  // Current state
+  let currentSlide = 0;
   let ticking = false;
 
+  // Initialize first slide as visible
+  slideContents[0]?.classList.add('active');
+
+  /**
+   * Determines which slide should be visible based on scroll
+   * and positions SVG transitions accordingly
+   */
+  function updateTransitions(): void {
+    const scrollY = window.scrollY;
+    const overallProgress = clamp(scrollY / maxScroll, 0, 1);
+    
+    // Update progress bar
+    if (progressFill) {
+      progressFill.style.width = `${overallProgress * 100}%`;
+    }
+
+    // Calculate which transition we're in
+    // Progress 0 -> 0.5 = transition 0, 0.5 -> 1 = transition 1
+    const transitionProgress = overallProgress * scrollUnits;
+    const activeTransitionIndex = Math.floor(transitionProgress);
+    const withinTransitionProgress = transitionProgress - activeTransitionIndex;
+
+    // Update each SVG wrapper position
+    svgWrappers.forEach((wrapper, index) => {
+      let translateX: number;
+
+      if (index < activeTransitionIndex) {
+        // This transition has passed - SVG is off-screen left
+        translateX = -100;
+      } else if (index > activeTransitionIndex) {
+        // This transition hasn't started - SVG is off-screen right
+        translateX = 100;
+      } else {
+        // This is the active transition - animate across screen
+        // Start at 100vw (right), end at -100vw (left)
+        const easedProgress = easeInOutCubic(withinTransitionProgress);
+        translateX = 100 - (easedProgress * 200);
+      }
+
+      wrapper.style.transform = `translateX(${translateX}vw)`;
+    });
+
+    // Determine which slide should be visible
+    // Slide switches when SVG passes the center (50% of transition)
+    let newSlide: number;
+    
+    if (overallProgress === 0) {
+      newSlide = 0;
+    } else if (overallProgress >= 1) {
+      newSlide = totalSlides - 1;
+    } else {
+      // Switch happens at midpoint of each transition
+      const switchThreshold = withinTransitionProgress >= 0.5 ? 1 : 0;
+      newSlide = Math.min(activeTransitionIndex + switchThreshold, totalSlides - 1);
+    }
+
+    // Update slide visibility if changed
+    if (newSlide !== currentSlide) {
+      slideContents[currentSlide]?.classList.remove('active');
+      slideContents[newSlide]?.classList.add('active');
+      currentSlide = newSlide;
+    }
+
+    ticking = false;
+  }
+
+  /**
+   * Scroll event handler with RAF throttling
+   */
   function onScroll(): void {
     if (!ticking) {
-      requestAnimationFrame(() => {
-        const scrollY = window.scrollY;
-
-        transitions.forEach((config) => {
-          const progress = getScrollProgress(scrollY, config.start, config.end);
-          updateSvgTransform(config.svg, progress);
-        });
-
-        ticking = false;
-      });
+      requestAnimationFrame(updateTransitions);
       ticking = true;
     }
   }
 
   // Initial update
-  onScroll();
+  updateTransitions();
 
-  // Listen for scroll events
+  // Listen for scroll
   window.addEventListener('scroll', onScroll, { passive: true });
 
-  // Recalculate positions on resize
+  // Handle resize
+  let resizeTimeout: number;
   window.addEventListener('resize', () => {
-    // Debounce resize handling
     clearTimeout(resizeTimeout);
     resizeTimeout = window.setTimeout(() => {
-      // Recalculate transition positions
-      transitions.length = 0;
-      
-      transitionZones.forEach((zone) => {
-        const svg = zone.querySelector<HTMLImageElement>('.transition-svg');
-        if (!svg) return;
-
-        const rect = zone.getBoundingClientRect();
-        const scrollTop = window.scrollY;
-        const start = scrollTop + rect.top - window.innerHeight;
-        const end = scrollTop + rect.bottom;
-
-        transitions.push({
-          element: zone,
-          svg,
-          start,
-          end,
-        });
-      });
-
-      onScroll();
+      updateTransitions();
     }, 100);
   });
 }
 
-let resizeTimeout: number;
-
 // Initialize when DOM is ready
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initScrollAnimations);
+  document.addEventListener('DOMContentLoaded', initWipeTransitions);
 } else {
-  initScrollAnimations();
+  initWipeTransitions();
 }
-
