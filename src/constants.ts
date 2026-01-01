@@ -1,9 +1,24 @@
 import type { WaveTransitionConfig } from './types';
 
 /**
+ * Animation constants for wave positioning (in viewport units)
+ * Note: START_POSITION_VW must match the CSS initial transform in styles.css
+ */
+export const WAVE_ANIMATION = {
+  /** Starting position off-screen right (vw) */
+  START_POSITION_VW: 150,
+  /** Ending position off-screen left (vw) */
+  END_POSITION_VW: -150,
+  /** Total travel distance (vw) */
+  TRAVEL_DISTANCE_VW: 300,
+} as const;
+
+/**
  * Default configuration for wave transitions
  */
 export const WAVE_TRANSITION_CONFIG: WaveTransitionConfig = {
+  /** Path to the wave SVG asset */
+  waveSvgPath: '/wave-pattern.svg',
   /** When leading wave covers the center of the viewport */
   leadingEdge: 0.6,
   /** When trailing wave reveals the center of the viewport */

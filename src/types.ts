@@ -18,6 +18,8 @@ export interface WaveConfig {
  * Configuration for the wave transition system
  */
 export interface WaveTransitionConfig {
+  /** Path to the wave SVG asset */
+  waveSvgPath: string;
   /** Progress threshold when leading wave covers center (0-1) */
   leadingEdge: number;
   /** Progress threshold when trailing wave reveals center (0-1) */
@@ -34,6 +36,20 @@ export interface WaveTransitionConfig {
   opacityTriggerVw: number;
   /** Per-wave configuration */
   waves: WaveConfig[];
+}
+
+/**
+ * Information about the current scroll segment (dwell or transition)
+ */
+export interface SegmentInfo {
+  /** Whether currently in a dwell zone (vs transition) */
+  isInDwell: boolean;
+  /** Index of the current/source slide */
+  currentSlideIndex: number;
+  /** Index of the active transition (-1 if none) */
+  activeTransitionIndex: number;
+  /** Progress within the current transition (0-1) */
+  withinTransitionProgress: number;
 }
 
 /**
