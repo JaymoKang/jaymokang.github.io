@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>jaymo.dev</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Outfit:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body>
+    <!-- Content Layer - Fixed, stacked slide content -->
+    <div class="content-layer">
+      <!-- Hero Content -->
+      <div class="slide-content" data-slide="0">
+        <h1 class="hero-title">Jaymo</h1>
+        <p class="hero-subtitle">Engineering Manager & Technical Lead</p>
+        <div class="scroll-hint">
+          <span>Scroll to explore</span>
+          <div class="scroll-arrow"></div>
+        </div>
+      </div>
+
+      <!-- About Content -->
+      <div class="slide-content" data-slide="1">
+        <h2 class="section-title">About Me</h2>
+        <p class="about-text">
+          I'm an engineering manager at <a href="https://headway.co/about-us" target="_blank" rel="noopener"></a>Headway</a>, where I focus on building
+          reliable systems that help therapists spend less time on insurance
+          paperwork and more time with patients. I'm drawn to problems at the
+          intersection of data modeling and system design—finding the right
+          abstractions that make complex domains feel simple without hiding
+          important details.
+        </p>
+        <p class="about-text">
+          Outside of work, you'll find me in the water catching waves,
+          butchering Korean verb conjugations, or buying and selling used items.
+          I'm always happy to chat about my latest sleep hacks or how to make
+          the best cup of coffee.
+        </p>
+      </div>
+
+      <!-- Contact Content -->
+      <div class="slide-content" data-slide="2">
+        <h2 class="section-title">Let's Connect</h2>
+        <p class="contact-text">
+          I'd love to hear from you. Whether you have a project in mind or just
+          want to say hello, feel free to reach out.
+        </p>
+        <div class="social-icons">
+          <a
+            href="mailto:hello@jaymokang.com"
+            class="social-icon"
+            aria-label="Email"
+          >
+            <img src="/email-svgrepo-com.svg" alt="Email" />
+          </a>
+          <a
+            href="https://github.com/jaymokang"
+            class="social-icon"
+            aria-label="GitHub"
+            target="_blank"
+            rel="noopener"
+          >
+            <img src="/github-mark.svg" alt="GitHub" />
+          </a>
+          <a
+            href="https://linkedin.com/in/jaymokang"
+            class="social-icon"
+            aria-label="LinkedIn"
+            target="_blank"
+            rel="noopener"
+          >
+            <img src="/InBug-Black.png" alt="LinkedIn" />
+          </a>
+          <a
+            href="https://instagram.com/wayvmo"
+            class="social-icon"
+            aria-label="Instagram"
+            target="_blank"
+            rel="noopener"
+          >
+            <img src="/Instagram_Glyph_Black.svg" alt="Instagram" />
+          </a>
+        </div>
+        <footer class="footer">
+          <p>&copy; 2026 Jaymo Kang. All rights reserved.</p>
+          <p class="icon-attribution">
+            Wave icon by
+            <a
+              href="https://thenounproject.com/creator/a.panasovsky"
+              target="_blank"
+              rel="noopener"
+              >Oleksandr Panasovskyi</a
+            >
+            from
+            <a href="https://thenounproject.com/" target="_blank" rel="noopener"
+              >Noun Project</a
+            >
+          </p>
+        </footer>
+      </div>
+    </div>
+
+    <!-- SVG Layer - Scrolling wave transitions -->
+    <div class="svg-layer">
+      <!-- Wave Transition (between Hero and About) -->
+      <div class="wave-transition" data-transition="0"></div>
+
+      <!-- Wave Transition (between About and Contact) -->
+      <div class="wave-transition" data-transition="1"></div>
+    </div>
+
+    <!-- Progress Indicator -->
+    <div class="progress-bar">
+      <div class="progress-fill"></div>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

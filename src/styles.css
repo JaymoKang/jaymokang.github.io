@@ -1,0 +1,330 @@
+/* ===== CSS Variables & Theme ===== */
+:root {
+  /* Ocean-inspired palette */
+  --color-deep-ocean: #0d3b4c;
+  --color-wave: #1a6b8a;
+  --color-seafoam: #7ec8c8;
+  --color-sand: #f7f3e9;
+  --color-sunset: #ff7e5f;
+  
+  /* Typography */
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-body: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  
+  /* Spacing */
+  --space-xs: 0.5rem;
+  --space-sm: 1rem;
+  --space-md: 2rem;
+  --space-lg: 4rem;
+  --space-xl: 8rem;
+  
+  /* Transitions */
+  --ease-smooth: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --transition-base: 0.3s var(--ease-smooth);
+}
+
+/* ===== Reset & Base ===== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+}
+
+body {
+  font-family: var(--font-body);
+  font-weight: 300;
+  line-height: 1.7;
+  color: var(--color-deep-ocean);
+  background: var(--color-sand);
+  /* Create scroll space for transitions */
+  height: 1500vh;
+  overflow-x: hidden;
+}
+
+/* ===== Content Layer - Fixed, centered ===== */
+.content-layer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.slide-content {
+  position: absolute;
+  max-width: 800px;
+  text-align: center;
+  padding: var(--space-lg);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.slide-content.visible {
+  pointer-events: auto;
+}
+
+/* Hero slide - full height flexbox layout */
+.slide-content[data-slide="0"] {
+  height: 60vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+/* ===== SVG Layer - Scrolling wave transitions ===== */
+.svg-layer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 10;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.wave-transition {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+}
+
+.wave {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 120vw;
+  height: 120vh;
+  /* 
+   * Initial off-screen position (right side)
+   * IMPORTANT: This value must match WAVE_ANIMATION.START_POSITION_VW in constants.ts
+   */
+  transform: translateX(150vw);
+  transform-origin: center center;
+  will-change: transform, opacity;
+  object-fit: contain;
+}
+
+/* ===== Typography ===== */
+.hero-title {
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 10vw, 7rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: var(--color-deep-ocean);
+  margin-bottom: var(--space-sm);
+}
+
+.hero-subtitle {
+  font-family: var(--font-body);
+  font-size: clamp(1rem, 2.5vw, 1.5rem);
+  font-weight: 300;
+  color: var(--color-wave);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.section-title {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 6vw, 4rem);
+  font-weight: 600;
+  color: var(--color-deep-ocean);
+  margin-bottom: var(--space-md);
+}
+
+.about-text {
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  color: var(--color-wave);
+  margin-bottom: var(--space-sm);
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.contact-text {
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  color: var(--color-wave);
+  margin-bottom: var(--space-lg);
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ===== Scroll Hint ===== */
+.scroll-hint {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
+  margin-top: auto;
+  padding-bottom: var(--space-lg);
+}
+
+.scroll-hint span {
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-seafoam);
+}
+
+.scroll-arrow {
+  width: 24px;
+  height: 24px;
+  border-right: 2px solid var(--color-seafoam);
+  border-bottom: 2px solid var(--color-seafoam);
+  transform: rotate(45deg);
+  animation: bounce 2s infinite;
+}
+
+/* ===== Social Icons ===== */
+.social-icons {
+  display: flex;
+  flex-direction: row;
+  gap: var(--space-md);
+  align-items: center;
+  justify-content: center;
+}
+
+.social-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  text-decoration: none;
+  transition: var(--transition-base);
+}
+
+.social-icon img {
+  width: 32px;
+  height: 32px;
+  transition: var(--transition-base);
+  opacity: 0.7;
+}
+
+.social-icon:hover img {
+  opacity: 1;
+}
+
+.social-icon:hover {
+  color: var(--color-sunset);
+  transform: translateY(-4px) scale(1.1);
+}
+
+.social-icon:active {
+  transform: translateY(-2px) scale(1.05);
+}
+
+.footer {
+  margin-top: var(--space-lg);
+}
+
+.footer p {
+  font-size: 0.875rem;
+  color: var(--color-seafoam);
+}
+
+.footer .icon-attribution {
+  font-size: 0.75rem;
+  margin-top: var(--space-xs);
+  opacity: 0.7;
+}
+
+.footer .icon-attribution a {
+  color: var(--color-seafoam);
+  text-decoration: none;
+  transition: var(--transition-base);
+}
+
+.footer .icon-attribution a:hover {
+  color: var(--color-wave);
+  text-decoration: underline;
+}
+
+/* ===== Progress Indicator ===== */
+.progress-bar {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 4px;
+  background: var(--color-wave);
+  border-radius: 2px;
+  z-index: 100;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--color-seafoam);
+  border-radius: 2px;
+  transition: width 0.1s ease-out;
+}
+
+/* ===== Animations ===== */
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: rotate(45deg) translateY(0);
+  }
+  40% {
+    transform: rotate(45deg) translateY(-8px);
+  }
+  60% {
+    transform: rotate(45deg) translateY(-4px);
+  }
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .slide-content {
+    padding: var(--space-md);
+  }
+  
+  .social-icons {
+    gap: var(--space-sm);
+  }
+  
+  .social-icon {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .social-icon img {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+@media (max-width: 480px) {
+  .scroll-hint {
+    padding-bottom: var(--space-md);
+  }
+}
+
+/* ===== Reduced Motion ===== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
