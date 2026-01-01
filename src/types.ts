@@ -10,6 +10,8 @@ export interface WaveConfig {
   opacity: number;
   /** Phase offset for undulation (radians) */
   phaseOffset: number;
+  /** Vertical position as percentage (0-100) */
+  topOffset: number;
 }
 
 /**

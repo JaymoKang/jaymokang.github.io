@@ -18,10 +18,11 @@ export const WAVE_TRANSITION_CONFIG: WaveTransitionConfig = {
   undulationFrequency: 2.5,
   /** Per-wave configuration (front to back) */
   waves: [
-    { scale: 1.2, stagger: 0, opacity: 1, phaseOffset: 0 },
-    { scale: 1.0, stagger: 0.08, opacity: 0.85, phaseOffset: Math.PI * 0.5 },
-    { scale: 0.85, stagger: 0.16, opacity: 0.7, phaseOffset: Math.PI },
-    { scale: 0.7, stagger: 0.24, opacity: 0.55, phaseOffset: Math.PI * 1.5 },
+    { scale: 0.5, stagger: 0.16, opacity: 1, phaseOffset: 0, topOffset: -15 },
+    { scale: 0.5, stagger: 0.08, opacity: 1, phaseOffset: 0, topOffset: 0 },
+    { scale: 0.5, stagger: 0.0, opacity: 1, phaseOffset: Math.PI * 0.5, topOffset: 15 },
+    { scale: 0.5, stagger: -0.08, opacity: 1, phaseOffset: Math.PI, topOffset: 30 },
+    { scale: 0.5, stagger: -0.16, opacity: 1, phaseOffset: Math.PI * 1.5, topOffset: 55 },
   ],
 };
 

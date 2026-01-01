@@ -115,12 +115,6 @@ body {
   object-fit: contain;
 }
 
-/* Wave stacking order - front waves on top */
-.wave-1 { z-index: 4; }
-.wave-2 { z-index: 3; }
-.wave-3 { z-index: 2; }
-.wave-4 { z-index: 1; }
-
 /* ===== Typography ===== */
 .hero-title {
   font-family: var(--font-display);
@@ -213,7 +207,7 @@ body {
 }
 
 .contact-link:hover {
-  background: rgba(13, 59, 76, 0.08);
+  background: color-mix(in srgb, var(--color-deep-ocean) 8%, transparent);
   transform: translateY(-2px);
 }
 

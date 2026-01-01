@@ -232,6 +232,7 @@ export class WaveTransitionController {
         // Apply transform with scale
         wave.style.transform = `translateX(${translateX}vw) translateY(${translateY}vh) scale(${waveConfig.scale})`;
         wave.style.opacity = String(waveConfig.opacity);
+        wave.style.top = `${waveConfig.topOffset}%`;
       });
     });
   }
