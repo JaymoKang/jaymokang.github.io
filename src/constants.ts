@@ -29,8 +29,6 @@ export const WAVE_TRANSITION_CONFIG: WaveTransitionConfig = {
   leadingEdge: 0.6,
   /** When trailing wave reveals the center of the viewport */
   trailingEdge: 0.8,
-  /** Ratio of scroll spent on dwell zones (0.3 = 30% dwell, 70% transition) */
-  dwellRatio: 0.3,
   /** Debounce delay for window resize events */
   resizeDebounceMs: 100,
   /** Amplitude of vertical undulation in vh units */

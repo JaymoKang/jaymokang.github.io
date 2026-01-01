@@ -7,12 +7,10 @@ import type { SegmentInfo, WaveTransitionConfig } from '../../types';
 export class SegmentCalculator {
   private readonly totalSlides: number;
   private readonly totalTransitions: number;
-  private readonly dwellRatio: number;
 
-  constructor(totalSlides: number, totalTransitions: number, config: WaveTransitionConfig) {
+  constructor(totalSlides: number, totalTransitions: number, _config: WaveTransitionConfig) {
     this.totalSlides = totalSlides;
     this.totalTransitions = totalTransitions;
-    this.dwellRatio = config.dwellRatio;
   }
 
   /**
@@ -23,15 +21,14 @@ export class SegmentCalculator {
    */
   calculate(overallProgress: number): SegmentInfo {
     // Simplified: divide equally but scale by ratio
-    const singleDwellSize = this.dwellRatio / this.totalSlides;
-    const singleTransitionSize = (1 - this.dwellRatio) / this.totalTransitions;
+    const singleTransitionSize = 1 / this.totalTransitions;
     
     // Find which segment we're in
     let position = 0;
     
     for (let i = 0; i < this.totalSlides; i++) {
       // Check if in dwell for slide i
-      const dwellEnd = position + singleDwellSize;
+      const dwellEnd = position;
       if (overallProgress < dwellEnd) {
         return {
           isInDwell: true,
