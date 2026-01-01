@@ -11,6 +11,12 @@ export const WAVE_ANIMATION = {
   END_POSITION_VW: -150,
   /** Total travel distance (vw) */
   TRAVEL_DISTANCE_VW: 300,
+  /** Scale multiplier at start of journey (0-1, relative to wave's configured scale) */
+  START_SCALE_FACTOR: -0.5,
+  /** Scale multiplier at end of journey (0-1, relative to wave's configured scale) */
+  END_SCALE_FACTOR: 2.0,
+  /** Progress point (0-1) at which opacity fade begins */
+  OPACITY_FADE_START: 0.3,
 } as const;
 
 /**

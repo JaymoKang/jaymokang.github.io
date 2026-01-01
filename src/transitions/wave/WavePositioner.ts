@@ -34,14 +34,21 @@ export class WavePositioner {
         let translateX: number;
         let translateY: number;
 
+        let dynamicScale: number;
+        let dynamicOpacity: number;
+
         if (transitionIndex < activeIndex) {
           // This transition has passed - waves are off-screen left
           translateX = WAVE_ANIMATION.END_POSITION_VW;
           translateY = 0;
+          dynamicScale = waveConfig.scale * WAVE_ANIMATION.END_SCALE_FACTOR;
+          dynamicOpacity = 0;
         } else if (transitionIndex > activeIndex || activeIndex < 0) {
           // This transition hasn't started - waves are off-screen right
           translateX = WAVE_ANIMATION.START_POSITION_VW;
           translateY = 0;
+          dynamicScale = waveConfig.scale * WAVE_ANIMATION.START_SCALE_FACTOR;
+          dynamicOpacity = waveConfig.opacity;
         } else {
           // This is the active transition - animate waves across screen
           // Apply stagger to each wave's progress
@@ -59,11 +66,25 @@ export class WavePositioner {
           // Vertical undulation using sine wave
           const undulationPhase = staggeredProgress * Math.PI * 2 * this.undulationFrequency + waveConfig.phaseOffset;
           translateY = Math.sin(undulationPhase) * this.undulationAmplitude;
+
+          // Dynamic scale: lerp from START_SCALE_FACTOR to END_SCALE_FACTOR
+          const scaleFactor = WAVE_ANIMATION.START_SCALE_FACTOR + 
+            staggeredProgress * (WAVE_ANIMATION.END_SCALE_FACTOR - WAVE_ANIMATION.START_SCALE_FACTOR);
+          dynamicScale = waveConfig.scale * scaleFactor;
+
+          // Dynamic opacity: stay at full until OPACITY_FADE_START, then lerp to 0
+          if (staggeredProgress < WAVE_ANIMATION.OPACITY_FADE_START) {
+            dynamicOpacity = waveConfig.opacity;
+          } else {
+            const fadeProgress = (staggeredProgress - WAVE_ANIMATION.OPACITY_FADE_START) / 
+              (1 - WAVE_ANIMATION.OPACITY_FADE_START);
+            dynamicOpacity = waveConfig.opacity * (1 - fadeProgress);
+          }
         }
 
-        // Apply transform with scale
-        wave.style.transform = `translateX(${translateX}vw) translateY(${translateY}vh) scale(${waveConfig.scale})`;
-        wave.style.opacity = String(waveConfig.opacity);
+        // Apply transform with dynamic scale
+        wave.style.transform = `translateX(${translateX}vw) translateY(${translateY}vh) scale(${dynamicScale})`;
+        wave.style.opacity = String(dynamicOpacity);
         wave.style.top = `${waveConfig.topOffset}%`;
       });
     });
