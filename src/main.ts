@@ -49,7 +49,7 @@ function initWipeTransitions(): void {
   const maxScroll = docHeight - viewportHeight;
 
   // Current state
-  let currentSlide = 0;
+  let currentSlide: number | null = 0;
   let ticking = false;
 
   // Initialize first slide as visible
@@ -94,24 +94,42 @@ function initWipeTransitions(): void {
       wrapper.style.transform = `translateX(${translateX}vw)`;
     });
 
-    // Determine which slide should be visible
-    // Slide switches when SVG passes the center (50% of transition)
-    let newSlide: number;
+    // Determine which slide should be visible based on SVG edge positions
+    // Leading edge reaches center at ~25%, trailing edge leaves at ~75%
+    // Between these points, no text is visible (SVG covers the center)
+    
+    const LEADING_EDGE = 0.25;  // When SVG leading edge covers center
+    const TRAILING_EDGE = 0.75; // When SVG trailing edge reveals center
+    
+    let newSlide: number | null;
     
     if (overallProgress === 0) {
+      // At start, show first slide
       newSlide = 0;
     } else if (overallProgress >= 1) {
+      // At end, show last slide
       newSlide = totalSlides - 1;
+    } else if (withinTransitionProgress < LEADING_EDGE) {
+      // SVG hasn't covered center yet - show current slide
+      newSlide = activeTransitionIndex;
+    } else if (withinTransitionProgress > TRAILING_EDGE) {
+      // SVG has passed center - show next slide
+      newSlide = Math.min(activeTransitionIndex + 1, totalSlides - 1);
     } else {
-      // Switch happens at midpoint of each transition
-      const switchThreshold = withinTransitionProgress >= 0.5 ? 1 : 0;
-      newSlide = Math.min(activeTransitionIndex + switchThreshold, totalSlides - 1);
+      // SVG is covering center - hide all text
+      newSlide = null;
     }
 
-    // Update slide visibility if changed
+    // Update slide visibility
     if (newSlide !== currentSlide) {
-      slideContents[currentSlide]?.classList.remove('active');
-      slideContents[newSlide]?.classList.add('active');
+      // Hide current slide
+      if (currentSlide !== null) {
+        slideContents[currentSlide]?.classList.remove('active');
+      }
+      // Show new slide (if any)
+      if (newSlide !== null) {
+        slideContents[newSlide]?.classList.add('active');
+      }
       currentSlide = newSlide;
     }
 
