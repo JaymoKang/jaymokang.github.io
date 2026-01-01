@@ -48,12 +48,39 @@ export class WaveTransitionController {
       return;
     }
 
+    // Generate wave elements based on config
+    this.generateWaveElements();
+
     // Initial update (sets opacity based on scroll position)
     this.updateTransitions();
 
     // Attach event listeners
     window.addEventListener('scroll', this.handleScroll, { passive: true });
     window.addEventListener('resize', this.handleResize);
+  }
+
+  /**
+   * Generates wave img elements inside each wave-transition container
+   * based on the waves array in config
+   */
+  private generateWaveElements(): void {
+    const { waves } = this.config;
+    const waveSrc = '/noun-ocean-waves-4289571.svg';
+
+    this.waveTransitions.forEach((container) => {
+      // Clear any existing waves
+      container.innerHTML = '';
+
+      // Create wave elements based on config
+      waves.forEach(() => {
+        const img = document.createElement('img');
+        img.src = waveSrc;
+        img.alt = '';
+        img.className = 'wave';
+        img.setAttribute('aria-hidden', 'true');
+        container.appendChild(img);
+      });
+    });
   }
 
   /**
@@ -240,6 +267,7 @@ export class WaveTransitionController {
   /**
    * Calculates and applies opacity for all slides based on scroll position
    * Opacity is directly tied to scroll, no CSS transitions
+   * Opacity changes are delayed until the leading wave reaches opacityTriggerVw
    */
   private updateSlideVisibility(
     overallProgress: number,
@@ -248,7 +276,18 @@ export class WaveTransitionController {
     isInDwell: boolean,
     currentSlideIndex: number
   ): void {
-    const { leadingEdge, trailingEdge } = this.config;
+    const { leadingEdge, trailingEdge, opacityTriggerVw } = this.config;
+
+    // Calculate the eased progress threshold at which the wave reaches the trigger position
+    // Wave translateX = 150 - easedProgress * 300, so:
+    // easedProgress = (150 - opacityTriggerVw) / 300
+    const triggerEasedProgress = (150 - opacityTriggerVw) / 300;
+    
+    // Calculate current eased progress
+    const easedProgress = easeInOutCubic(clamp(withinTransitionProgress, 0, 1));
+    
+    // Check if we've reached the trigger point
+    const hasReachedTrigger = easedProgress >= triggerEasedProgress;
 
     // Calculate opacity for each slide
     this.slideContents.forEach((slide, index) => {
@@ -259,19 +298,27 @@ export class WaveTransitionController {
         opacity = index === currentSlideIndex ? 1 : 0;
       } else if (index === activeTransitionIndex) {
         // This is the outgoing slide (being covered by waves)
-        // Fade from 1 → 0 as progress goes from 0 → leadingEdge
-        if (withinTransitionProgress <= 0) {
+        // Delay fade until wave reaches trigger position
+        if (!hasReachedTrigger) {
           opacity = 1;
         } else if (withinTransitionProgress >= leadingEdge) {
           opacity = 0;
         } else {
-          // Linear fade: 1 at 0%, 0 at leadingEdge
-          opacity = 1 - (withinTransitionProgress / leadingEdge);
+          // Remap: fade from 1 → 0 between trigger point and leadingEdge
+          const fadeStart = this.easedProgressToRaw(triggerEasedProgress);
+          const fadeRange = leadingEdge - fadeStart;
+          if (fadeRange <= 0) {
+            opacity = 0;
+          } else {
+            opacity = 1 - ((withinTransitionProgress - fadeStart) / fadeRange);
+          }
         }
       } else if (index === activeTransitionIndex + 1) {
         // This is the incoming slide (being revealed by waves)
-        // Fade from 0 → 1 as progress goes from trailingEdge → 1
-        if (withinTransitionProgress <= trailingEdge) {
+        // Delay fade until wave reaches trigger position
+        if (!hasReachedTrigger) {
+          opacity = 0;
+        } else if (withinTransitionProgress <= trailingEdge) {
           opacity = 0;
         } else if (withinTransitionProgress >= 1) {
           opacity = 1;
@@ -295,5 +342,35 @@ export class WaveTransitionController {
         slide.classList.remove('visible');
       }
     });
+  }
+
+  /**
+   * Approximate inverse of easeInOutCubic for the first half of the curve
+   * Used to convert an eased progress value back to raw progress
+   */
+  private easedProgressToRaw(easedProgress: number): number {
+    if (easedProgress <= 0) return 0;
+    if (easedProgress >= 1) return 1;
+    
+    // For easeInOutCubic, first half: y = 4x³
+    // Inverse: x = (y/4)^(1/3)
+    if (easedProgress < 0.5) {
+      return Math.pow(easedProgress / 4, 1 / 3);
+    }
+    
+    // Second half: y = 1 - ((-2x + 2)³) / 2
+    // Inverse is more complex, use approximation via binary search
+    let low = 0.5;
+    let high = 1;
+    for (let i = 0; i < 20; i++) {
+      const mid = (low + high) / 2;
+      const eased = easeInOutCubic(mid);
+      if (eased < easedProgress) {
+        low = mid;
+      } else {
+        high = mid;
+      }
+    }
+    return (low + high) / 2;
   }
 }

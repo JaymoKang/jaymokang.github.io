@@ -30,6 +30,8 @@ export interface WaveTransitionConfig {
   undulationAmplitude: number;
   /** Frequency of undulation (number of complete waves during transition) */
   undulationFrequency: number;
+  /** Wave position (in vw) at which opacity changes begin */
+  opacityTriggerVw: number;
   /** Per-wave configuration */
   waves: WaveConfig[];
 }
