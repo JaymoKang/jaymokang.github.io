@@ -77,6 +77,15 @@ body {
   pointer-events: auto;
 }
 
+/* Hero slide - full height flexbox layout */
+.slide-content[data-slide="0"] {
+  height: 60vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
 /* ===== SVG Layer - Scrolling wipe transitions ===== */
 .svg-layer {
   position: fixed;
@@ -154,14 +163,12 @@ body {
 
 /* ===== Scroll Hint ===== */
 .scroll-hint {
-  position: absolute;
-  bottom: var(--space-lg);
-  left: 50%;
-  transform: translateX(-50%);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--space-xs);
+  margin-top: auto;
+  padding-bottom: var(--space-lg);
 }
 
 .scroll-hint span {
@@ -274,6 +281,12 @@ body {
   
   .contact-link {
     width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .scroll-hint {
+    padding-bottom: var(--space-md);
   }
 }
 
