@@ -91,6 +91,7 @@ export class WipeTransitionController {
 
   /**
    * Updates SVG positions and slide visibility based on scroll position
+   * Accounts for dwell zones between transitions
    */
   private updateTransitions(): void {
     const scrollY = window.scrollY;
@@ -99,18 +100,92 @@ export class WipeTransitionController {
 
     this.updateProgressBar(overallProgress);
 
-    const transitionProgress = overallProgress * this.totalTransitions;
-    const activeTransitionIndex = Math.floor(transitionProgress);
-    const withinTransitionProgress = transitionProgress - activeTransitionIndex;
+    // Calculate segment info accounting for dwell zones
+    const segmentInfo = this.calculateSegmentInfo(overallProgress);
 
-    this.updateSvgPositions(activeTransitionIndex, withinTransitionProgress);
+    this.updateSvgPositions(segmentInfo.activeTransitionIndex, segmentInfo.withinTransitionProgress);
     this.updateSlideVisibility(
       overallProgress,
-      activeTransitionIndex,
-      withinTransitionProgress
+      segmentInfo.activeTransitionIndex,
+      segmentInfo.withinTransitionProgress,
+      segmentInfo.isInDwell,
+      segmentInfo.currentSlideIndex
     );
 
     this.ticking = false;
+  }
+
+  /**
+   * Calculates which segment (dwell or transition) we're in based on scroll progress
+   * 
+   * Layout: [dwell0][trans0][dwell1][trans1][dwell2]
+   * With 3 slides and 2 transitions, we have 5 segments total
+   */
+  private calculateSegmentInfo(overallProgress: number): {
+    isInDwell: boolean;
+    currentSlideIndex: number;
+    activeTransitionIndex: number;
+    withinTransitionProgress: number;
+  } {
+    const { dwellRatio } = this.config;
+    
+    // Total segments: slides (dwells) + transitions
+    // Pattern: dwell, trans, dwell, trans, dwell... 
+    // For 3 slides: dwell0, trans0, dwell1, trans1, dwell2 = 5 segments
+    const totalSegments = this.totalSlides + this.totalTransitions;
+    
+    // Calculate the size of each segment type
+    // dwellRatio determines what fraction of total scroll is dwell vs transition
+    const totalDwellRatio = dwellRatio * this.totalSlides;
+    const totalTransitionRatio = (1 - dwellRatio) * this.totalSlides;
+    
+    // Normalize: each dwell and transition segment size
+    const dwellSize = totalDwellRatio / totalSegments;
+    const transitionSize = totalTransitionRatio / totalSegments;
+    
+    // Simplified: divide equally but scale by ratio
+    const singleDwellSize = dwellRatio / this.totalSlides;
+    const singleTransitionSize = (1 - dwellRatio) / this.totalTransitions;
+    
+    // Find which segment we're in
+    let position = 0;
+    
+    for (let i = 0; i < this.totalSlides; i++) {
+      // Check if in dwell for slide i
+      const dwellEnd = position + singleDwellSize;
+      if (overallProgress < dwellEnd) {
+        return {
+          isInDwell: true,
+          currentSlideIndex: i,
+          activeTransitionIndex: i - 1, // No active transition
+          withinTransitionProgress: 0,
+        };
+      }
+      position = dwellEnd;
+      
+      // Check if in transition i (if there is one)
+      if (i < this.totalTransitions) {
+        const transitionEnd = position + singleTransitionSize;
+        if (overallProgress < transitionEnd) {
+          const withinProgress = (overallProgress - position) / singleTransitionSize;
+          return {
+            isInDwell: false,
+            currentSlideIndex: i,
+            activeTransitionIndex: i,
+            withinTransitionProgress: withinProgress,
+          };
+        }
+        position = transitionEnd;
+      }
+    }
+    
+    // At the very end - last slide dwell
+    return {
+      isInDwell: true,
+      currentSlideIndex: this.totalSlides - 1,
+      activeTransitionIndex: this.totalTransitions - 1,
+      withinTransitionProgress: 1,
+    };
   }
 
   /**
@@ -135,7 +210,7 @@ export class WipeTransitionController {
       if (index < activeIndex) {
         // This transition has passed - SVG is off-screen left
         translateX = -100;
-      } else if (index > activeIndex) {
+      } else if (index > activeIndex || activeIndex < 0) {
         // This transition hasn't started - SVG is off-screen right
         translateX = 100;
       } else {
@@ -156,7 +231,9 @@ export class WipeTransitionController {
   private updateSlideVisibility(
     overallProgress: number,
     activeTransitionIndex: number,
-    withinTransitionProgress: number
+    withinTransitionProgress: number,
+    isInDwell: boolean,
+    currentSlideIndex: number
   ): void {
     const { leadingEdge, trailingEdge } = this.config;
 
@@ -164,12 +241,9 @@ export class WipeTransitionController {
     this.slideContents.forEach((slide, index) => {
       let opacity: number;
 
-      if (overallProgress === 0 && index === 0) {
-        // At very start, first slide fully visible
-        opacity = 1;
-      } else if (overallProgress >= 1 && index === this.totalSlides - 1) {
-        // At very end, last slide fully visible
-        opacity = 1;
+      if (isInDwell) {
+        // In a dwell zone - only the current slide is visible
+        opacity = index === currentSlideIndex ? 1 : 0;
       } else if (index === activeTransitionIndex) {
         // This is the outgoing slide (being covered by SVG)
         // Fade from 1 → 0 as progress goes from 0 → leadingEdge
@@ -193,11 +267,8 @@ export class WipeTransitionController {
           const fadeRange = 1 - trailingEdge;
           opacity = (withinTransitionProgress - trailingEdge) / fadeRange;
         }
-      } else if (index < activeTransitionIndex) {
-        // Slides that have already passed - hidden
-        opacity = 0;
       } else {
-        // Slides that haven't been reached yet - hidden
+        // All other slides are hidden
         opacity = 0;
       }
 
