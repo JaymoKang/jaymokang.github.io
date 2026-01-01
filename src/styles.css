@@ -70,14 +70,11 @@ body {
   text-align: center;
   padding: var(--space-lg);
   opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.4s var(--ease-smooth), visibility 0.4s;
-  pointer-events: auto;
+  pointer-events: none;
 }
 
-.slide-content.active {
-  opacity: 1;
-  visibility: visible;
+.slide-content.visible {
+  pointer-events: auto;
 }
 
 /* ===== SVG Layer - Scrolling wipe transitions ===== */

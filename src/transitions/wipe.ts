@@ -14,7 +14,6 @@ export class WipeTransitionController {
   private readonly totalSlides: number;
   private readonly totalTransitions: number;
 
-  private currentSlide: number | null = 0;
   private ticking = false;
   private resizeTimeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -48,10 +47,7 @@ export class WipeTransitionController {
       return;
     }
 
-    // Initialize first slide as visible
-    this.slideContents[0]?.classList.add('active');
-
-    // Initial update
+    // Initial update (sets opacity based on scroll position)
     this.updateTransitions();
 
     // Attach event listeners
@@ -154,7 +150,8 @@ export class WipeTransitionController {
   }
 
   /**
-   * Determines and updates which slide should be visible
+   * Calculates and applies opacity for all slides based on scroll position
+   * Opacity is directly tied to scroll, no CSS transitions
    */
   private updateSlideVisibility(
     overallProgress: number,
@@ -163,35 +160,57 @@ export class WipeTransitionController {
   ): void {
     const { leadingEdge, trailingEdge } = this.config;
 
-    let newSlide: number | null;
+    // Calculate opacity for each slide
+    this.slideContents.forEach((slide, index) => {
+      let opacity: number;
 
-    if (overallProgress === 0) {
-      // At start, show first slide
-      newSlide = 0;
-    } else if (overallProgress >= 1) {
-      // At end, show last slide
-      newSlide = this.totalSlides - 1;
-    } else if (withinTransitionProgress < leadingEdge) {
-      // SVG hasn't covered center yet - show current slide
-      newSlide = activeTransitionIndex;
-    } else if (withinTransitionProgress > trailingEdge) {
-      // SVG has passed center - show next slide
-      newSlide = Math.min(activeTransitionIndex + 1, this.totalSlides - 1);
-    } else {
-      // SVG is covering center - hide all text
-      newSlide = null;
-    }
+      if (overallProgress === 0 && index === 0) {
+        // At very start, first slide fully visible
+        opacity = 1;
+      } else if (overallProgress >= 1 && index === this.totalSlides - 1) {
+        // At very end, last slide fully visible
+        opacity = 1;
+      } else if (index === activeTransitionIndex) {
+        // This is the outgoing slide (being covered by SVG)
+        // Fade from 1 → 0 as progress goes from 0 → leadingEdge
+        if (withinTransitionProgress <= 0) {
+          opacity = 1;
+        } else if (withinTransitionProgress >= leadingEdge) {
+          opacity = 0;
+        } else {
+          // Linear fade: 1 at 0%, 0 at leadingEdge
+          opacity = 1 - (withinTransitionProgress / leadingEdge);
+        }
+      } else if (index === activeTransitionIndex + 1) {
+        // This is the incoming slide (being revealed by SVG)
+        // Fade from 0 → 1 as progress goes from trailingEdge → 1
+        if (withinTransitionProgress <= trailingEdge) {
+          opacity = 0;
+        } else if (withinTransitionProgress >= 1) {
+          opacity = 1;
+        } else {
+          // Linear fade: 0 at trailingEdge, 1 at 100%
+          const fadeRange = 1 - trailingEdge;
+          opacity = (withinTransitionProgress - trailingEdge) / fadeRange;
+        }
+      } else if (index < activeTransitionIndex) {
+        // Slides that have already passed - hidden
+        opacity = 0;
+      } else {
+        // Slides that haven't been reached yet - hidden
+        opacity = 0;
+      }
 
-    // Update slide visibility if changed
-    if (newSlide !== this.currentSlide) {
-      if (this.currentSlide !== null) {
-        this.slideContents[this.currentSlide]?.classList.remove('active');
+      // Apply opacity directly
+      slide.style.opacity = String(opacity);
+
+      // Toggle pointer-events based on visibility
+      if (opacity > 0) {
+        slide.classList.add('visible');
+      } else {
+        slide.classList.remove('visible');
       }
-      if (newSlide !== null) {
-        this.slideContents[newSlide]?.classList.add('active');
-      }
-      this.currentSlide = newSlide;
-    }
+    });
   }
 }
 
