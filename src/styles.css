@@ -238,6 +238,23 @@ body {
   color: var(--color-seafoam);
 }
 
+.footer .icon-attribution {
+  font-size: 0.75rem;
+  margin-top: var(--space-xs);
+  opacity: 0.7;
+}
+
+.footer .icon-attribution a {
+  color: var(--color-seafoam);
+  text-decoration: none;
+  transition: var(--transition-base);
+}
+
+.footer .icon-attribution a:hover {
+  color: var(--color-wave);
+  text-decoration: underline;
+}
+
 /* ===== Progress Indicator ===== */
 .progress-bar {
   position: fixed;
