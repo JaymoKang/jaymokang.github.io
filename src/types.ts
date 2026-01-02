@@ -38,6 +38,10 @@ export interface WaveTransitionConfig {
   opacityTriggerVw: number;
   /** Per-wave configuration */
   waves: WaveConfig[];
+  /** Delay in ms before scroll gravity activates after scrolling stops */
+  scrollIdleDelayMs: number;
+  /** Duration in ms for the gravity snap animation */
+  gravityAnimationDurationMs: number;
 }
 
 /**
@@ -62,4 +66,3 @@ export interface WaveTransitionElements {
   waveTransitions: NodeListOf<HTMLElement>;
   progressFill: HTMLElement | null;
 }
-
