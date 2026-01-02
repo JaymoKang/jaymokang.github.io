@@ -1,6 +1,6 @@
-import type { WaveTransitionConfig, WaveConfig } from '../../types';
-import { WAVE_ANIMATION } from '../../constants';
-import { clamp, easeInOutCubic } from '../../utils/math';
+import type { WaveTransitionConfig, WaveConfig } from "../../types";
+import { WAVE_ANIMATION } from "../../constants";
+import { clamp, easeInOutCubic } from "../../utils/math";
 
 /**
  * Handles positioning of wave elements during transitions
@@ -26,11 +26,12 @@ export class WavePositioner {
     withinProgress: number
   ): void {
     waveTransitions.forEach((transition, transitionIndex) => {
-      const waveElements = transition.querySelectorAll<HTMLElement>('.wave');
+      const waveElements = transition.querySelectorAll<HTMLElement>(".wave");
 
       waveElements.forEach((wave, waveIndex) => {
-        const waveConfig = this.waves[waveIndex] || this.waves[this.waves.length - 1];
-        
+        const waveConfig =
+          this.waves[waveIndex] || this.waves[this.waves.length - 1];
+
         let translateX: number;
         let translateY: number;
 
@@ -41,13 +42,13 @@ export class WavePositioner {
           // This transition has passed - waves are off-screen left
           translateX = WAVE_ANIMATION.END_POSITION_VW;
           translateY = 0;
-          dynamicScale = waveConfig.scale * WAVE_ANIMATION.END_SCALE_FACTOR;
+          dynamicScale = waveConfig.endScaleFactor;
           dynamicOpacity = 0;
         } else if (transitionIndex > activeIndex || activeIndex < 0) {
           // This transition hasn't started - waves are off-screen right
           translateX = WAVE_ANIMATION.START_POSITION_VW;
           translateY = 0;
-          dynamicScale = waveConfig.scale * WAVE_ANIMATION.START_SCALE_FACTOR;
+          dynamicScale = waveConfig.startScaleFactor;
           dynamicOpacity = waveConfig.opacity;
         } else {
           // This is the active transition - animate waves across screen
@@ -57,26 +58,35 @@ export class WavePositioner {
             0,
             1
           );
-          
-          const easedProgress = easeInOutCubic(staggeredProgress);
-          
-          // Horizontal: Start at START_POSITION_VW (right), end at END_POSITION_VW (left)
-          translateX = WAVE_ANIMATION.START_POSITION_VW - easedProgress * WAVE_ANIMATION.TRAVEL_DISTANCE_VW;
-          
-          // Vertical undulation using sine wave
-          const undulationPhase = staggeredProgress * Math.PI * 2 * this.undulationFrequency + waveConfig.phaseOffset;
-          translateY = Math.sin(undulationPhase) * this.undulationAmplitude;
 
-          // Dynamic scale: lerp from START_SCALE_FACTOR to END_SCALE_FACTOR
-          const scaleFactor = WAVE_ANIMATION.START_SCALE_FACTOR + 
-            staggeredProgress * (WAVE_ANIMATION.END_SCALE_FACTOR - WAVE_ANIMATION.START_SCALE_FACTOR);
-          dynamicScale = waveConfig.scale * scaleFactor;
+          const easedProgress = easeInOutCubic(staggeredProgress);
+
+          // Horizontal: Start at START_POSITION_VW (right), end at END_POSITION_VW (left)
+          translateX =
+            WAVE_ANIMATION.START_POSITION_VW -
+            easedProgress * WAVE_ANIMATION.TRAVEL_DISTANCE_VW;
+
+          // Vertical undulation using sine wave
+          const undulationPhase =
+            staggeredProgress * Math.PI * 2 * this.undulationFrequency +
+            waveConfig.phaseOffset;
+          translateY =
+            Math.sin(undulationPhase) * this.undulationAmplitude +
+            waveConfig.slope * staggeredProgress;
+
+          // Dynamic scale: lerp from startScaleFactor to endScaleFactor
+          const scaleFactor =
+            waveConfig.startScaleFactor +
+            staggeredProgress *
+              (waveConfig.endScaleFactor - waveConfig.startScaleFactor);
+          dynamicScale = scaleFactor;
 
           // Dynamic opacity: stay at full until OPACITY_FADE_START, then lerp to 0
           if (staggeredProgress < WAVE_ANIMATION.OPACITY_FADE_START) {
             dynamicOpacity = waveConfig.opacity;
           } else {
-            const fadeProgress = (staggeredProgress - WAVE_ANIMATION.OPACITY_FADE_START) / 
+            const fadeProgress =
+              (staggeredProgress - WAVE_ANIMATION.OPACITY_FADE_START) /
               (1 - WAVE_ANIMATION.OPACITY_FADE_START);
             dynamicOpacity = waveConfig.opacity * (1 - fadeProgress);
           }
@@ -90,4 +100,3 @@ export class WavePositioner {
     });
   }
 }
-

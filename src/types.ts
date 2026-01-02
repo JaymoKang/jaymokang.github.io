@@ -2,8 +2,6 @@
  * Configuration for individual wave properties
  */
 export interface WaveConfig {
-  /** Scale multiplier for wave size (1.0 = 100%) */
-  scale: number;
   /** Horizontal stagger offset (0-1, delays wave start) */
   stagger: number;
   /** Opacity of the wave (0-1) */
@@ -12,6 +10,12 @@ export interface WaveConfig {
   phaseOffset: number;
   /** Vertical position as percentage (0-100) */
   topOffset: number;
+  /** Scale multiplier at start of journey */
+  startScaleFactor: number;
+  /** Scale multiplier at end of journey */
+  endScaleFactor: number;
+  /** Slope of the wave (0-1) */
+  slope: number;
 }
 
 /**
