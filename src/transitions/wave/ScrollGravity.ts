@@ -1,5 +1,27 @@
 import type { WaveTransitionConfig } from "../../types";
+import { SCROLL_GRAVITY } from "../../constants";
+import {
+  addWindowListeners,
+  removeWindowListeners,
+  type EventListenerSpec,
+} from "../../utils/events";
 import { clamp, easeInOutCubic } from "../../utils/math";
+import { SlideLayout } from "./SlideLayout";
+
+/**
+ * Gravity state machine types
+ * Uses discriminated unions to make state transitions explicit
+ */
+type GravityState =
+  | { type: "idle" }
+  | { type: "waiting"; timeoutId: ReturnType<typeof setTimeout> }
+  | {
+      type: "animating";
+      frameId: number | null;
+      startTime: number;
+      startScroll: number;
+      targetScroll: number;
+    };
 
 /**
  * Handles scroll gravity behavior - automatically snaps to the nearest slide
@@ -7,18 +29,13 @@ import { clamp, easeInOutCubic } from "../../utils/math";
  */
 export class ScrollGravity {
   private readonly config: WaveTransitionConfig;
-  private readonly totalSlides: number;
-  private readonly totalTransitions: number;
+  private readonly slideLayout: SlideLayout;
 
-  private idleTimeout: ReturnType<typeof setTimeout> | null = null;
-  private animationFrameId: number | null = null;
-  private isAnimating = false;
+  // State machine for gravity behavior
+  private state: GravityState = { type: "idle" };
+
+  // Track if user is actively touching (prevents gravity during interaction)
   private isUserTouching = false;
-
-  // Animation state
-  private animationStartTime = 0;
-  private animationStartScroll = 0;
-  private animationTargetScroll = 0;
 
   // Bound handler for user input detection
   private readonly handleUserInput: () => void;
@@ -27,14 +44,17 @@ export class ScrollGravity {
   private readonly handleTouchStart: () => void;
   private readonly handleTouchEnd: () => void;
 
+  // Event listener specifications for easier management
+  private readonly touchStateListeners: EventListenerSpec[];
+  private readonly inputListeners: EventListenerSpec[];
+
   constructor(
     totalSlides: number,
     totalTransitions: number,
     config: WaveTransitionConfig
   ) {
-    this.totalSlides = totalSlides;
-    this.totalTransitions = totalTransitions;
     this.config = config;
+    this.slideLayout = new SlideLayout(totalSlides, totalTransitions);
 
     // Bind handler for user input detection
     this.handleUserInput = this.onUserInput.bind(this);
@@ -46,23 +66,28 @@ export class ScrollGravity {
     this.handleTouchEnd = () => {
       this.isUserTouching = false;
     };
+
+    // Define event listener specifications
+    this.touchStateListeners = [
+      { type: "touchstart", handler: this.handleTouchStart },
+      { type: "touchend", handler: this.handleTouchEnd },
+      { type: "touchcancel", handler: this.handleTouchEnd },
+      { type: "mousedown", handler: this.handleTouchStart },
+      { type: "mouseup", handler: this.handleTouchEnd },
+    ];
+
+    this.inputListeners = [
+      { type: "wheel", handler: this.handleUserInput },
+      { type: "touchstart", handler: this.handleUserInput },
+      { type: "keydown", handler: this.handleUserInput },
+    ];
   }
 
   /**
    * Initializes touch/mouse state tracking listeners
    */
   init(): void {
-    window.addEventListener("touchstart", this.handleTouchStart, {
-      passive: true,
-    });
-    window.addEventListener("touchend", this.handleTouchEnd, { passive: true });
-    window.addEventListener("touchcancel", this.handleTouchEnd, {
-      passive: true,
-    });
-    window.addEventListener("mousedown", this.handleTouchStart, {
-      passive: true,
-    });
-    window.addEventListener("mouseup", this.handleTouchEnd, { passive: true });
+    addWindowListeners(this.touchStateListeners, { passive: true });
   }
 
   /**
@@ -70,46 +95,51 @@ export class ScrollGravity {
    */
   onScroll(): void {
     // Ignore scroll events triggered by our own animation
-    if (this.isAnimating) return;
+    if (this.state.type === "animating") return;
 
-    this.resetIdleTimer();
+    this.transitionToWaiting();
   }
 
   /**
    * Cleans up timers and animations
    */
   destroy(): void {
-    this.cancelAnimation();
-    this.removeInputListeners();
-    this.removeTouchStateListeners();
-    if (this.idleTimeout !== null) {
-      clearTimeout(this.idleTimeout);
-      this.idleTimeout = null;
-    }
+    this.transitionToIdle();
+    removeWindowListeners(this.touchStateListeners);
   }
 
   /**
-   * Removes touch/mouse state tracking listeners
+   * Transitions to waiting state, starting the idle timer
    */
-  private removeTouchStateListeners(): void {
-    window.removeEventListener("touchstart", this.handleTouchStart);
-    window.removeEventListener("touchend", this.handleTouchEnd);
-    window.removeEventListener("touchcancel", this.handleTouchEnd);
-    window.removeEventListener("mousedown", this.handleTouchStart);
-    window.removeEventListener("mouseup", this.handleTouchEnd);
-  }
-
-  /**
-   * Resets the idle detection timer
-   */
-  private resetIdleTimer(): void {
-    if (this.idleTimeout !== null) {
-      clearTimeout(this.idleTimeout);
+  private transitionToWaiting(): void {
+    // Clean up any existing state first
+    if (this.state.type === "waiting") {
+      clearTimeout(this.state.timeoutId);
     }
 
-    this.idleTimeout = setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       this.onScrollIdle();
     }, this.config.scrollIdleDelayMs);
+
+    this.state = { type: "waiting", timeoutId };
+  }
+
+  /**
+   * Transitions to idle state, cleaning up any active timers or animations
+   */
+  private transitionToIdle(): void {
+    switch (this.state.type) {
+      case "waiting":
+        clearTimeout(this.state.timeoutId);
+        break;
+      case "animating":
+        if (this.state.frameId !== null) {
+          cancelAnimationFrame(this.state.frameId);
+        }
+        removeWindowListeners(this.inputListeners);
+        break;
+    }
+    this.state = { type: "idle" };
   }
 
   /**
@@ -117,72 +147,54 @@ export class ScrollGravity {
    */
   private onScrollIdle(): void {
     // Don't trigger gravity while user is actively touching/clicking
-    if (this.isUserTouching) return;
+    if (this.isUserTouching) {
+      this.state = { type: "idle" };
+      return;
+    }
 
     const scrollY = window.scrollY;
     const maxScroll =
       document.documentElement.scrollHeight - window.innerHeight;
 
     // Don't do anything if there's nowhere to scroll
-    if (maxScroll <= 0) return;
+    if (maxScroll <= 0) {
+      this.state = { type: "idle" };
+      return;
+    }
 
     const currentProgress = clamp(scrollY / maxScroll, 0, 1);
-    const targetProgress = this.findNearestSlideCenter(currentProgress);
+    const targetProgress =
+      this.slideLayout.findNearestSlideCenter(currentProgress);
 
     // Only animate if we're not already at the target
     const targetScroll = targetProgress * maxScroll;
     const distance = Math.abs(targetScroll - scrollY);
 
     // Use a small threshold to avoid micro-animations
-    if (distance > 1) {
-      this.animateToPosition(scrollY, targetScroll);
+    if (distance > SCROLL_GRAVITY.MIN_SNAP_DISTANCE_PX) {
+      this.transitionToAnimating(scrollY, targetScroll);
+    } else {
+      this.state = { type: "idle" };
     }
   }
 
   /**
-   * Finds the nearest slide center progress value
-   *
-   * Slide centers are at:
-   * - Slide 0: progress = 0
-   * - Slide N: progress = N / totalTransitions (after transition N-1)
+   * Transitions to animating state
    */
-  private findNearestSlideCenter(currentProgress: number): number {
-    // Generate all slide center positions
-    const slideCenters: number[] = [];
-
-    for (let i = 0; i < this.totalSlides; i++) {
-      // Slide i is fully visible after transition i-1 completes
-      // Transition size is 1/totalTransitions
-      const center = i / this.totalTransitions;
-      slideCenters.push(clamp(center, 0, 1));
-    }
-
-    // Find the nearest center
-    let nearestCenter = slideCenters[0];
-    let minDistance = Math.abs(currentProgress - nearestCenter);
-
-    for (const center of slideCenters) {
-      const distance = Math.abs(currentProgress - center);
-      if (distance < minDistance) {
-        minDistance = distance;
-        nearestCenter = center;
-      }
-    }
-
-    return nearestCenter;
-  }
-
-  /**
-   * Starts a smooth animation to the target scroll position
-   */
-  private animateToPosition(startScroll: number, targetScroll: number): void {
-    this.isAnimating = true;
-    this.animationStartTime = performance.now();
-    this.animationStartScroll = startScroll;
-    this.animationTargetScroll = targetScroll;
+  private transitionToAnimating(
+    startScroll: number,
+    targetScroll: number
+  ): void {
+    this.state = {
+      type: "animating",
+      frameId: null,
+      startTime: performance.now(),
+      startScroll,
+      targetScroll,
+    };
 
     // Listen for user input to allow interruption
-    this.addInputListeners();
+    addWindowListeners(this.inputListeners, { passive: true });
 
     this.animationStep();
   }
@@ -191,67 +203,37 @@ export class ScrollGravity {
    * Animation frame step - updates scroll position with easing
    */
   private animationStep = (): void => {
-    if (!this.isAnimating) return;
+    if (this.state.type !== "animating") return;
 
-    const elapsed = performance.now() - this.animationStartTime;
+    const { startTime, startScroll, targetScroll } = this.state;
+    const elapsed = performance.now() - startTime;
     const duration = this.config.gravityAnimationDurationMs;
     const progress = clamp(elapsed / duration, 0, 1);
     const easedProgress = easeInOutCubic(progress);
 
     const currentScroll =
-      this.animationStartScroll +
-      (this.animationTargetScroll - this.animationStartScroll) * easedProgress;
+      startScroll + (targetScroll - startScroll) * easedProgress;
 
     window.scrollTo(0, currentScroll);
 
     if (progress < 1) {
-      this.animationFrameId = requestAnimationFrame(this.animationStep);
+      this.state = {
+        ...this.state,
+        frameId: requestAnimationFrame(this.animationStep),
+      };
     } else {
-      this.isAnimating = false;
-      this.animationFrameId = null;
-      this.removeInputListeners();
+      removeWindowListeners(this.inputListeners);
+      this.state = { type: "idle" };
     }
   };
-
-  /**
-   * Cancels any in-progress animation
-   */
-  private cancelAnimation(): void {
-    this.isAnimating = false;
-    if (this.animationFrameId !== null) {
-      cancelAnimationFrame(this.animationFrameId);
-      this.animationFrameId = null;
-    }
-    this.removeInputListeners();
-  }
 
   /**
    * Handles user input events (wheel, touch, keyboard) during animation
    * Cancels animation to allow user to take control
    */
   private onUserInput(): void {
-    if (this.isAnimating) {
-      this.cancelAnimation();
+    if (this.state.type === "animating") {
+      this.transitionToIdle();
     }
-  }
-
-  /**
-   * Adds event listeners for user scroll input
-   */
-  private addInputListeners(): void {
-    window.addEventListener("wheel", this.handleUserInput, { passive: true });
-    window.addEventListener("touchstart", this.handleUserInput, {
-      passive: true,
-    });
-    window.addEventListener("keydown", this.handleUserInput, { passive: true });
-  }
-
-  /**
-   * Removes event listeners for user scroll input
-   */
-  private removeInputListeners(): void {
-    window.removeEventListener("wheel", this.handleUserInput);
-    window.removeEventListener("touchstart", this.handleUserInput);
-    window.removeEventListener("keydown", this.handleUserInput);
   }
 }

@@ -1,6 +1,10 @@
 import type { WaveTransitionConfig } from "../../types";
 import { WAVE_ANIMATION } from "../../constants";
-import { clamp, easeInOutCubic } from "../../utils/math";
+import {
+  clamp,
+  easeInOutCubic,
+  inverseEaseInOutCubic,
+} from "../../utils/math";
 
 /**
  * Manages slide visibility and opacity during wave transitions
@@ -120,7 +124,7 @@ export class SlideVisibility {
     }
 
     // Remap: fade from 1 → 0 between trigger point and leadingEdge
-    const fadeStart = this.easedProgressToRaw(triggerEasedProgress);
+    const fadeStart = inverseEaseInOutCubic(triggerEasedProgress);
     const fadeRange = this.leadingEdge - fadeStart;
 
     if (fadeRange <= 0) {
@@ -153,35 +157,5 @@ export class SlideVisibility {
     // Linear fade: 0 at trailingEdge, 1 at 100%
     const fadeRange = 1 - this.trailingEdge;
     return (withinTransitionProgress - this.trailingEdge) / fadeRange;
-  }
-
-  /**
-   * Approximate inverse of easeInOutCubic for the first half of the curve
-   * Used to convert an eased progress value back to raw progress
-   */
-  private easedProgressToRaw(easedProgress: number): number {
-    if (easedProgress <= 0) return 0;
-    if (easedProgress >= 1) return 1;
-
-    // For easeInOutCubic, first half: y = 4x³
-    // Inverse: x = (y/4)^(1/3)
-    if (easedProgress < 0.5) {
-      return Math.pow(easedProgress / 4, 1 / 3);
-    }
-
-    // Second half: y = 1 - ((-2x + 2)³) / 2
-    // Inverse is more complex, use approximation via binary search
-    let low = 0.5;
-    let high = 1;
-    for (let i = 0; i < 20; i++) {
-      const mid = (low + high) / 2;
-      const eased = easeInOutCubic(mid);
-      if (eased < easedProgress) {
-        low = mid;
-      } else {
-        high = mid;
-      }
-    }
-    return (low + high) / 2;
   }
 }
