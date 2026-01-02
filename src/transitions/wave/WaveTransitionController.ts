@@ -39,7 +39,7 @@ export class WaveTransitionController {
 
   constructor(
     elements: WaveTransitionElements,
-    config: Partial<WaveTransitionConfig> = {}
+    config: Partial<WaveTransitionConfig> = {},
   ) {
     this.config = { ...WAVE_TRANSITION_CONFIG, ...config };
     this.slideContents = elements.slideContents;
@@ -52,14 +52,14 @@ export class WaveTransitionController {
     // Initialize helper modules
     this.segmentCalculator = new SegmentCalculator(
       this.totalSlides,
-      this.totalTransitions
+      this.totalTransitions,
     );
     this.wavePositioner = new WavePositioner(this.config);
     this.slideVisibility = new SlideVisibility(this.config);
     this.scrollGravity = new ScrollGravity(
       this.totalSlides,
       this.totalTransitions,
-      this.config
+      this.config,
     );
 
     // Bind handlers
@@ -174,7 +174,7 @@ export class WaveTransitionController {
     this.wavePositioner.updatePositions(
       this.waveTransitions,
       segmentInfo.activeTransitionIndex,
-      segmentInfo.withinTransitionProgress
+      segmentInfo.withinTransitionProgress,
     );
 
     // Update slide visibility
@@ -183,7 +183,7 @@ export class WaveTransitionController {
       segmentInfo.activeTransitionIndex,
       segmentInfo.withinTransitionProgress,
       segmentInfo.isInDwell,
-      segmentInfo.currentSlideIndex
+      segmentInfo.currentSlideIndex,
     );
 
     this.ticking = false;

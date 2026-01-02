@@ -1,10 +1,6 @@
 import type { WaveTransitionConfig } from "../../types";
 import { WAVE_ANIMATION } from "../../constants";
-import {
-  clamp,
-  easeInOutCubic,
-  inverseEaseInOutCubic,
-} from "../../utils/math";
+import { clamp, easeInOutCubic, inverseEaseInOutCubic } from "../../utils/math";
 
 /**
  * Manages slide visibility and opacity during wave transitions
@@ -29,7 +25,7 @@ export class SlideVisibility {
     activeTransitionIndex: number,
     withinTransitionProgress: number,
     isInDwell: boolean,
-    currentSlideIndex: number
+    currentSlideIndex: number,
   ): void {
     // Calculate the eased progress threshold at which the wave reaches the trigger position
     // Wave translateX = START_POSITION_VW - easedProgress * TRAVEL_DISTANCE_VW, so:
@@ -53,7 +49,7 @@ export class SlideVisibility {
         isInDwell,
         currentSlideIndex,
         hasReachedTrigger,
-        triggerEasedProgress
+        triggerEasedProgress,
       );
 
       // Apply opacity directly
@@ -78,7 +74,7 @@ export class SlideVisibility {
     isInDwell: boolean,
     currentSlideIndex: number,
     hasReachedTrigger: boolean,
-    triggerEasedProgress: number
+    triggerEasedProgress: number,
   ): number {
     if (isInDwell) {
       // In a dwell zone - only the current slide is visible
@@ -90,7 +86,7 @@ export class SlideVisibility {
       return this.calculateOutgoingOpacity(
         withinTransitionProgress,
         hasReachedTrigger,
-        triggerEasedProgress
+        triggerEasedProgress,
       );
     }
 
@@ -98,7 +94,7 @@ export class SlideVisibility {
       // This is the incoming slide (being revealed by waves)
       return this.calculateIncomingOpacity(
         withinTransitionProgress,
-        hasReachedTrigger
+        hasReachedTrigger,
       );
     }
 
@@ -112,7 +108,7 @@ export class SlideVisibility {
   private calculateOutgoingOpacity(
     withinTransitionProgress: number,
     hasReachedTrigger: boolean,
-    triggerEasedProgress: number
+    triggerEasedProgress: number,
   ): number {
     // Delay fade until wave reaches trigger position
     if (!hasReachedTrigger) {
@@ -139,7 +135,7 @@ export class SlideVisibility {
    */
   private calculateIncomingOpacity(
     withinTransitionProgress: number,
-    hasReachedTrigger: boolean
+    hasReachedTrigger: boolean,
   ): number {
     // Delay fade until wave reaches trigger position
     if (!hasReachedTrigger) {

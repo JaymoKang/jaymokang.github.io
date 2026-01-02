@@ -12,8 +12,7 @@ export class SlideLayout {
   constructor(totalSlides: number, totalTransitions: number) {
     this.totalSlides = totalSlides;
     this.totalTransitions = totalTransitions;
-    this.transitionSize =
-      totalTransitions > 0 ? 1 / totalTransitions : 1;
+    this.transitionSize = totalTransitions > 0 ? 1 / totalTransitions : 1;
   }
 
   /**
@@ -36,7 +35,9 @@ export class SlideLayout {
    * Gets all slide center progress values
    */
   getAllSlideCenters(): number[] {
-    return Array.from({ length: this.totalSlides }, (_, i) => this.getSlideCenterProgress(i));
+    return Array.from({ length: this.totalSlides }, (_, i) =>
+      this.getSlideCenterProgress(i),
+    );
   }
 
   /**
@@ -59,4 +60,3 @@ export class SlideLayout {
     return nearestCenter;
   }
 }
-

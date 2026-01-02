@@ -17,7 +17,7 @@ export interface EventListenerSpec {
  */
 export function addWindowListeners(
   specs: EventListenerSpec[],
-  options?: AddEventListenerOptions
+  options?: AddEventListenerOptions,
 ): () => void {
   for (const { type, handler } of specs) {
     window.addEventListener(type, handler, options);
@@ -38,4 +38,3 @@ export function removeWindowListeners(specs: EventListenerSpec[]): void {
     window.removeEventListener(type, handler);
   }
 }
-

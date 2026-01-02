@@ -33,7 +33,7 @@ function getTransitionElements(): WaveTransitionElements | null {
       `WaveTransition: Expected ${
         slideContents.length - 1
       } .wave-transition elements ` +
-        `for ${slideContents.length} slides, found ${waveTransitions.length}`
+        `for ${slideContents.length} slides, found ${waveTransitions.length}`,
     );
   }
 
@@ -48,7 +48,7 @@ function init(): void {
 
   if (!elements) {
     console.error(
-      "WaveTransition: Initialization aborted due to missing elements"
+      "WaveTransition: Initialization aborted due to missing elements",
     );
     return;
   }

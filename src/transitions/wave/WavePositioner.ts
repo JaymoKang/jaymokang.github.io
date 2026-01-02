@@ -26,7 +26,7 @@ export class WavePositioner {
    */
   cacheWaveElements(waveTransitions: NodeListOf<HTMLElement>): void {
     this.cachedWaveElements = Array.from(waveTransitions).map((transition) =>
-      Array.from(transition.querySelectorAll<HTMLElement>(".wave"))
+      Array.from(transition.querySelectorAll<HTMLElement>(".wave")),
     );
   }
 
@@ -36,7 +36,7 @@ export class WavePositioner {
   updatePositions(
     waveTransitions: NodeListOf<HTMLElement>,
     activeIndex: number,
-    withinProgress: number
+    withinProgress: number,
   ): void {
     waveTransitions.forEach((transition, transitionIndex) => {
       // Use cached elements if available, fallback to DOM query
@@ -72,7 +72,7 @@ export class WavePositioner {
           const staggeredProgress = clamp(
             (withinProgress - waveConfig.stagger) / (1 - waveConfig.stagger),
             0,
-            1
+            1,
           );
 
           const easedProgress = easeInOutCubic(staggeredProgress);
