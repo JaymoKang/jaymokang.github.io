@@ -11,6 +11,8 @@ export class WavePositioner {
   private readonly undulationAmplitude: number;
   private readonly undulationFrequency: number;
 
+  // Stored reference to wave transition containers
+  private waveTransitions: NodeListOf<HTMLElement> | null = null;
   // Cached wave elements per transition (avoids DOM queries on every frame)
   private cachedWaveElements: HTMLElement[][] = [];
 
@@ -21,10 +23,11 @@ export class WavePositioner {
   }
 
   /**
-   * Caches wave elements after they are generated
+   * Sets the wave transition containers and caches their child wave elements
    * Call this once after creating wave elements in the DOM
    */
-  cacheWaveElements(waveTransitions: NodeListOf<HTMLElement>): void {
+  setWaveTransitions(waveTransitions: NodeListOf<HTMLElement>): void {
+    this.waveTransitions = waveTransitions;
     this.cachedWaveElements = Array.from(waveTransitions).map((transition) =>
       Array.from(transition.querySelectorAll<HTMLElement>(".wave")),
     );
@@ -33,17 +36,37 @@ export class WavePositioner {
   /**
    * Updates the position and style of all wave elements
    */
-  updatePositions(
-    waveTransitions: NodeListOf<HTMLElement>,
-    activeIndex: number,
-    withinProgress: number,
-  ): void {
+  /**
+   * Checks if the wave has reached a given horizontal position
+   * Encapsulates the positioning formula so other modules don't need to duplicate it
+   */
+  hasReachedPosition(withinProgress: number, positionVw: number): boolean {
+    const easedProgress = easeInOutCubic(clamp(withinProgress, 0, 1));
+    const wavePositionVw =
+      WAVE_ANIMATION.START_POSITION_VW -
+      easedProgress * WAVE_ANIMATION.TRAVEL_DISTANCE_VW;
+    return wavePositionVw <= positionVw;
+  }
+
+  /**
+   * Returns the eased progress value at which the wave reaches a given position
+   * Used by SlideVisibility to calculate fade timing
+   */
+  getEasedProgressAtPosition(positionVw: number): number {
+    return (
+      (WAVE_ANIMATION.START_POSITION_VW - positionVw) /
+      WAVE_ANIMATION.TRAVEL_DISTANCE_VW
+    );
+  }
+
+  updatePositions(activeIndex: number, withinProgress: number): void {
+    if (!this.waveTransitions) return;
     // Cache viewport dimensions once per frame to avoid recalculations
     // Converting vw/vh to pixels prevents jank when mobile browsers show/hide URL bar
     const vw = window.innerWidth / 100;
     const vh = window.innerHeight / 100;
 
-    waveTransitions.forEach((transition, transitionIndex) => {
+    this.waveTransitions.forEach((transition, transitionIndex) => {
       // Use cached elements if available, fallback to DOM query
       const waveElements =
         this.cachedWaveElements[transitionIndex] ||
