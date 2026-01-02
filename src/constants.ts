@@ -12,13 +12,16 @@ export const SCROLL_GRAVITY = {
  * Animation constants for wave positioning (in viewport units)
  * Note: START_POSITION_VW must match the CSS initial transform in styles.css
  */
+const START_POSITION_VW = 170;
+const END_POSITION_VW = -115;
+
 export const WAVE_ANIMATION = {
   /** Starting position off-screen right (vw) */
-  START_POSITION_VW: 170,
+  START_POSITION_VW,
   /** Ending position off-screen left (vw) */
-  END_POSITION_VW: -115,
-  /** Total travel distance (vw) */
-  TRAVEL_DISTANCE_VW: 285,
+  END_POSITION_VW,
+  /** Total travel distance (vw) - derived from START - END */
+  TRAVEL_DISTANCE_VW: START_POSITION_VW - END_POSITION_VW,
   /** Progress point (0-1) at which wave opacity fade begins */
   OPACITY_FADE_START: 0.3,
 } as const;
