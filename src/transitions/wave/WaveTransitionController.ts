@@ -3,9 +3,10 @@ import { WAVE_TRANSITION_CONFIG } from "../../constants";
 import { addWindowListeners } from "../../utils/events";
 import { clamp } from "../../utils/math";
 import { SegmentCalculator } from "./SegmentCalculator";
-import { WavePositioner } from "./WavePositioner";
-import { SlideVisibility } from "./SlideVisibility";
 import { ScrollGravity } from "./ScrollGravity";
+import { SlideLayout } from "./SlideLayout";
+import { SlideVisibility } from "./SlideVisibility";
+import { WavePositioner } from "./WavePositioner";
 
 /**
  * Controls scroll-driven wave transitions between content slides
@@ -49,18 +50,17 @@ export class WaveTransitionController {
     this.totalSlides = this.slideContents.length;
     this.totalTransitions = this.waveTransitions.length;
 
-    // Initialize helper modules
-    this.segmentCalculator = new SegmentCalculator(
+    // Create shared SlideLayout instance
+    const slideLayout = new SlideLayout(
       this.totalSlides,
       this.totalTransitions,
     );
+
+    // Initialize helper modules with shared SlideLayout
+    this.segmentCalculator = new SegmentCalculator(slideLayout);
     this.wavePositioner = new WavePositioner(this.config);
     this.slideVisibility = new SlideVisibility(this.config);
-    this.scrollGravity = new ScrollGravity(
-      this.totalSlides,
-      this.totalTransitions,
-      this.config,
-    );
+    this.scrollGravity = new ScrollGravity(slideLayout, this.config);
   }
 
   /**

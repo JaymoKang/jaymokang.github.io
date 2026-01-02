@@ -48,13 +48,9 @@ export class ScrollGravity {
   private cleanupTouchStateListeners: (() => void) | null = null;
   private cleanupInputListeners: (() => void) | null = null;
 
-  constructor(
-    totalSlides: number,
-    totalTransitions: number,
-    config: WaveTransitionConfig,
-  ) {
+  constructor(slideLayout: SlideLayout, config: WaveTransitionConfig) {
     this.config = config;
-    this.slideLayout = new SlideLayout(totalSlides, totalTransitions);
+    this.slideLayout = slideLayout;
 
     // Bind handler for user input detection
     this.handleUserInput = this.onUserInput.bind(this);
