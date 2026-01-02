@@ -6,11 +6,11 @@ import type { WaveTransitionConfig } from './types';
  */
 export const WAVE_ANIMATION = {
   /** Starting position off-screen right (vw) */
-  START_POSITION_VW: 150,
+  START_POSITION_VW: 80,
   /** Ending position off-screen left (vw) */
   END_POSITION_VW: -150,
   /** Total travel distance (vw) */
-  TRAVEL_DISTANCE_VW: 300,
+  TRAVEL_DISTANCE_VW: 230,
   /** Scale multiplier at start of journey (0-1, relative to wave's configured scale) */
   START_SCALE_FACTOR: -0.5,
   /** Scale multiplier at end of journey (0-1, relative to wave's configured scale) */

@@ -113,7 +113,7 @@ body {
    * Initial off-screen position (right side)
    * IMPORTANT: This value must match WAVE_ANIMATION.START_POSITION_VW in constants.ts
    */
-  transform: translateX(150vw);
+  transform: translateX(80vw);
   transform-origin: center center;
   will-change: transform, opacity;
   object-fit: contain;
