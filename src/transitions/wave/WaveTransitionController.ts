@@ -1,14 +1,14 @@
-import type { WaveTransitionConfig, WaveTransitionElements } from '../../types';
-import { WAVE_TRANSITION_CONFIG } from '../../constants';
-import { clamp } from '../../utils/math';
-import { SegmentCalculator } from './SegmentCalculator';
-import { WavePositioner } from './WavePositioner';
-import { SlideVisibility } from './SlideVisibility';
+import type { WaveTransitionConfig, WaveTransitionElements } from "../../types";
+import { WAVE_TRANSITION_CONFIG } from "../../constants";
+import { clamp } from "../../utils/math";
+import { SegmentCalculator } from "./SegmentCalculator";
+import { WavePositioner } from "./WavePositioner";
+import { SlideVisibility } from "./SlideVisibility";
 
 /**
  * Controls scroll-driven wave transitions between content slides
  * Waves undulate vertically while traveling horizontally across the screen
- * 
+ *
  * This is the main orchestrator that delegates to focused helper classes:
  * - SegmentCalculator: determines scroll position within dwell/transition zones
  * - WavePositioner: handles wave element positioning and animation
@@ -66,7 +66,7 @@ export class WaveTransitionController {
    */
   init(): void {
     if (this.totalSlides === 0) {
-      console.error('No slide content found');
+      console.error("No slide content found");
       return;
     }
 
@@ -77,8 +77,8 @@ export class WaveTransitionController {
     this.updateTransitions();
 
     // Attach event listeners
-    window.addEventListener('scroll', this.handleScroll, { passive: true });
-    window.addEventListener('resize', this.handleResize);
+    window.addEventListener("scroll", this.handleScroll, { passive: true });
+    window.addEventListener("resize", this.handleResize);
   }
 
   /**
@@ -90,15 +90,15 @@ export class WaveTransitionController {
 
     this.waveTransitions.forEach((container) => {
       // Clear any existing waves
-      container.innerHTML = '';
+      container.innerHTML = "";
 
       // Create wave elements based on config
       waves.forEach(() => {
-        const img = document.createElement('img');
+        const img = document.createElement("img");
         img.src = waveSvgPath;
-        img.alt = '';
-        img.className = 'wave';
-        img.setAttribute('aria-hidden', 'true');
+        img.alt = "";
+        img.className = "wave";
+        img.setAttribute("aria-hidden", "true");
         container.appendChild(img);
       });
     });
@@ -108,8 +108,8 @@ export class WaveTransitionController {
    * Cleans up event listeners and timeouts
    */
   destroy(): void {
-    window.removeEventListener('scroll', this.handleScroll);
-    window.removeEventListener('resize', this.handleResize);
+    window.removeEventListener("scroll", this.handleScroll);
+    window.removeEventListener("resize", this.handleResize);
 
     if (this.resizeTimeout !== null) {
       clearTimeout(this.resizeTimeout);
@@ -144,7 +144,8 @@ export class WaveTransitionController {
    */
   private updateTransitions(): void {
     const scrollY = window.scrollY;
-    const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+    const maxScroll =
+      document.documentElement.scrollHeight - window.innerHeight;
     const overallProgress = clamp(scrollY / maxScroll, 0, 1);
 
     this.updateProgressBar(overallProgress);
@@ -180,4 +181,3 @@ export class WaveTransitionController {
     }
   }
 }
-

@@ -1,4 +1,4 @@
-import type { WaveTransitionConfig } from './types';
+import type { WaveTransitionConfig } from "./types";
 
 /**
  * Animation constants for wave positioning (in viewport units)
@@ -6,15 +6,11 @@ import type { WaveTransitionConfig } from './types';
  */
 export const WAVE_ANIMATION = {
   /** Starting position off-screen right (vw) */
-  START_POSITION_VW: 80,
+  START_POSITION_VW: 100,
   /** Ending position off-screen left (vw) */
-  END_POSITION_VW: -150,
+  END_POSITION_VW: -120,
   /** Total travel distance (vw) */
-  TRAVEL_DISTANCE_VW: 230,
-  /** Scale multiplier at start of journey (0-1, relative to wave's configured scale) */
-  START_SCALE_FACTOR: -0.5,
-  /** Scale multiplier at end of journey (0-1, relative to wave's configured scale) */
-  END_SCALE_FACTOR: 2.0,
+  TRAVEL_DISTANCE_VW: 220,
   /** Progress point (0-1) at which opacity fade begins */
   OPACITY_FADE_START: 0.3,
 } as const;
@@ -24,7 +20,7 @@ export const WAVE_ANIMATION = {
  */
 export const WAVE_TRANSITION_CONFIG: WaveTransitionConfig = {
   /** Path to the wave SVG asset */
-  waveSvgPath: '/wave-pattern.svg',
+  waveSvgPath: "/wave-pattern.svg",
   /** When leading wave covers the center of the viewport */
   leadingEdge: 0.6,
   /** When trailing wave reveals the center of the viewport */
@@ -36,12 +32,35 @@ export const WAVE_TRANSITION_CONFIG: WaveTransitionConfig = {
   /** Frequency of undulation (number of complete sine waves during transition) */
   undulationFrequency: 2.5,
   /** Wave position (in vw) at which opacity changes begin */
-  opacityTriggerVw: 50,
+  opacityTriggerVw: 80,
   /** Per-wave configuration (front to back) */
   waves: [
-    { scale: 0.5, stagger: 0.0, opacity: 1, phaseOffset: 0, topOffset: 30 },
-    { scale: 0.5, stagger: 0.08, opacity: 1, phaseOffset: Math.PI * 0.5, topOffset: 0 },
-    { scale: 0.5, stagger: 0.16, opacity: 1, phaseOffset: Math.PI * 0.25, topOffset: -30 },
+    {
+      stagger: -0.48,
+      opacity: 1,
+      phaseOffset: Math.PI * 0,
+      topOffset: 30,
+      startScaleFactor: 1.0,
+      endScaleFactor: 0.0,
+      slope: 1,
+    },
+    {
+      stagger: -0.24,
+      opacity: 1,
+      phaseOffset: Math.PI * 0.25,
+      topOffset: 20,
+      startScaleFactor: 1.6,
+      endScaleFactor: 0.0,
+      slope: 10.0,
+    },
+    {
+      stagger: 0.0,
+      opacity: 1,
+      phaseOffset: Math.PI * 0.5,
+      topOffset: 10,
+      startScaleFactor: 2.8,
+      endScaleFactor: 0.0,
+      slope: 20,
+    },
   ],
 };
-
