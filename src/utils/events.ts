@@ -29,12 +29,3 @@ export function addWindowListeners(
     }
   };
 }
-
-/**
- * Removes multiple event listeners from the window
- */
-export function removeWindowListeners(specs: EventListenerSpec[]): void {
-  for (const { type, handler } of specs) {
-    window.removeEventListener(type, handler);
-  }
-}

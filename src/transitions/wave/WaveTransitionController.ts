@@ -1,10 +1,12 @@
 import type { WaveTransitionConfig, WaveTransitionElements } from "../../types";
 import { WAVE_TRANSITION_CONFIG } from "../../constants";
-import { clamp } from "../../utils/math";
+import { addWindowListeners } from "../../utils/events";
+import { clamp, getMaxScroll } from "../../utils/math";
 import { SegmentCalculator } from "./SegmentCalculator";
-import { WavePositioner } from "./WavePositioner";
-import { SlideVisibility } from "./SlideVisibility";
 import { ScrollGravity } from "./ScrollGravity";
+import { SlideLayout } from "./SlideLayout";
+import { SlideVisibility } from "./SlideVisibility";
+import { WavePositioner } from "./WavePositioner";
 
 /**
  * Controls scroll-driven wave transitions between content slides
@@ -33,9 +35,8 @@ export class WaveTransitionController {
   private ticking = false;
   private resizeTimeout: ReturnType<typeof setTimeout> | null = null;
 
-  // Bound event handlers for cleanup
-  private readonly handleScroll: () => void;
-  private readonly handleResize: () => void;
+  // Cleanup function for event listeners
+  private cleanupListeners: (() => void) | null = null;
 
   constructor(
     elements: WaveTransitionElements,
@@ -49,22 +50,17 @@ export class WaveTransitionController {
     this.totalSlides = this.slideContents.length;
     this.totalTransitions = this.waveTransitions.length;
 
-    // Initialize helper modules
-    this.segmentCalculator = new SegmentCalculator(
+    // Create shared SlideLayout instance
+    const slideLayout = new SlideLayout(
       this.totalSlides,
       this.totalTransitions,
-    );
-    this.wavePositioner = new WavePositioner(this.config);
-    this.slideVisibility = new SlideVisibility(this.config);
-    this.scrollGravity = new ScrollGravity(
-      this.totalSlides,
-      this.totalTransitions,
-      this.config,
     );
 
-    // Bind handlers
-    this.handleScroll = this.onScroll.bind(this);
-    this.handleResize = this.onResize.bind(this);
+    // Initialize helper modules with shared SlideLayout
+    this.segmentCalculator = new SegmentCalculator(slideLayout);
+    this.wavePositioner = new WavePositioner(this.config);
+    this.slideVisibility = new SlideVisibility(this.config);
+    this.scrollGravity = new ScrollGravity(slideLayout, this.config);
   }
 
   /**
@@ -83,8 +79,10 @@ export class WaveTransitionController {
     this.updateTransitions();
 
     // Attach event listeners
-    window.addEventListener("scroll", this.handleScroll, { passive: true });
-    window.addEventListener("resize", this.handleResize);
+    this.cleanupListeners = addWindowListeners([
+      { type: "scroll", handler: this.onScroll.bind(this) },
+      { type: "resize", handler: this.onResize.bind(this) },
+    ]);
 
     // Initialize scroll gravity
     this.scrollGravity.init();
@@ -120,8 +118,8 @@ export class WaveTransitionController {
    * Cleans up event listeners and timeouts
    */
   destroy(): void {
-    window.removeEventListener("scroll", this.handleScroll);
-    window.removeEventListener("resize", this.handleResize);
+    this.cleanupListeners?.();
+    this.cleanupListeners = null;
 
     if (this.resizeTimeout !== null) {
       clearTimeout(this.resizeTimeout);
@@ -161,8 +159,7 @@ export class WaveTransitionController {
    */
   private updateTransitions(): void {
     const scrollY = window.scrollY;
-    const maxScroll =
-      document.documentElement.scrollHeight - window.innerHeight;
+    const maxScroll = getMaxScroll();
     const overallProgress = clamp(scrollY / maxScroll, 0, 1);
 
     this.updateProgressBar(overallProgress);

@@ -16,6 +16,20 @@ export class SlideLayout {
   }
 
   /**
+   * Gets the total number of slides
+   */
+  getTotalSlides(): number {
+    return this.totalSlides;
+  }
+
+  /**
+   * Gets the total number of transitions
+   */
+  getTotalTransitions(): number {
+    return this.totalTransitions;
+  }
+
+  /**
    * Gets the size of a single transition as a fraction of total progress (0-1)
    */
   getTransitionSize(): number {

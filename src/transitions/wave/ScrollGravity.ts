@@ -1,11 +1,7 @@
 import type { WaveTransitionConfig } from "../../types";
 import { SCROLL_GRAVITY } from "../../constants";
-import {
-  addWindowListeners,
-  removeWindowListeners,
-  type EventListenerSpec,
-} from "../../utils/events";
-import { clamp, easeInOutCubic } from "../../utils/math";
+import { addWindowListeners, type EventListenerSpec } from "../../utils/events";
+import { clamp, easeInOutCubic, getMaxScroll } from "../../utils/math";
 import { SlideLayout } from "./SlideLayout";
 
 /**
@@ -48,13 +44,13 @@ export class ScrollGravity {
   private readonly touchStateListeners: EventListenerSpec[];
   private readonly inputListeners: EventListenerSpec[];
 
-  constructor(
-    totalSlides: number,
-    totalTransitions: number,
-    config: WaveTransitionConfig,
-  ) {
+  // Cleanup functions returned by addWindowListeners
+  private cleanupTouchStateListeners: (() => void) | null = null;
+  private cleanupInputListeners: (() => void) | null = null;
+
+  constructor(slideLayout: SlideLayout, config: WaveTransitionConfig) {
     this.config = config;
-    this.slideLayout = new SlideLayout(totalSlides, totalTransitions);
+    this.slideLayout = slideLayout;
 
     // Bind handler for user input detection
     this.handleUserInput = this.onUserInput.bind(this);
@@ -90,7 +86,10 @@ export class ScrollGravity {
    * Initializes touch/mouse state tracking listeners
    */
   init(): void {
-    addWindowListeners(this.touchStateListeners, { passive: true });
+    this.cleanupTouchStateListeners = addWindowListeners(
+      this.touchStateListeners,
+      { passive: true },
+    );
   }
 
   /**
@@ -108,7 +107,8 @@ export class ScrollGravity {
    */
   destroy(): void {
     this.transitionToIdle();
-    removeWindowListeners(this.touchStateListeners);
+    this.cleanupTouchStateListeners?.();
+    this.cleanupTouchStateListeners = null;
   }
 
   /**
@@ -139,7 +139,8 @@ export class ScrollGravity {
         if (this.state.frameId !== null) {
           cancelAnimationFrame(this.state.frameId);
         }
-        removeWindowListeners(this.inputListeners);
+        this.cleanupInputListeners?.();
+        this.cleanupInputListeners = null;
         break;
     }
     this.state = { type: "idle" };
@@ -156,8 +157,7 @@ export class ScrollGravity {
     }
 
     const scrollY = window.scrollY;
-    const maxScroll =
-      document.documentElement.scrollHeight - window.innerHeight;
+    const maxScroll = getMaxScroll();
 
     // Don't do anything if there's nowhere to scroll
     if (maxScroll <= 0) {
@@ -199,7 +199,9 @@ export class ScrollGravity {
     };
 
     // Listen for user input to allow interruption
-    addWindowListeners(this.inputListeners, { passive: true });
+    this.cleanupInputListeners = addWindowListeners(this.inputListeners, {
+      passive: true,
+    });
 
     this.animationStep();
   }
@@ -233,7 +235,8 @@ export class ScrollGravity {
         frameId: requestAnimationFrame(this.animationStep),
       };
     } else {
-      removeWindowListeners(this.inputListeners);
+      this.cleanupInputListeners?.();
+      this.cleanupInputListeners = null;
       this.state = { type: "idle" };
     }
   };

@@ -10,10 +10,10 @@ export class SegmentCalculator {
   private readonly totalTransitions: number;
   private readonly slideLayout: SlideLayout;
 
-  constructor(totalSlides: number, totalTransitions: number) {
-    this.totalSlides = totalSlides;
-    this.totalTransitions = totalTransitions;
-    this.slideLayout = new SlideLayout(totalSlides, totalTransitions);
+  constructor(slideLayout: SlideLayout) {
+    this.slideLayout = slideLayout;
+    this.totalSlides = slideLayout.getTotalSlides();
+    this.totalTransitions = slideLayout.getTotalTransitions();
   }
 
   /**
