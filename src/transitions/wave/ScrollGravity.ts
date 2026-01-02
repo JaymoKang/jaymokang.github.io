@@ -65,6 +65,8 @@ export class ScrollGravity {
     };
     this.handleTouchEnd = () => {
       this.isUserTouching = false;
+      // Start gravity timer after user releases - in case no scroll event follows
+      this.transitionToWaiting();
     };
 
     // Define event listener specifications
@@ -80,6 +82,7 @@ export class ScrollGravity {
       { type: "wheel", handler: this.handleUserInput },
       { type: "touchstart", handler: this.handleUserInput },
       { type: "keydown", handler: this.handleUserInput },
+      { type: "mousedown", handler: this.handleUserInput },
     ];
   }
 
@@ -164,7 +167,7 @@ export class ScrollGravity {
 
     const currentProgress = clamp(scrollY / maxScroll, 0, 1);
     const targetProgress =
-      this.slideLayout.findNearestSlideCenter(currentProgress);
+      this.slideLayout.findSlideToSlideTowards(currentProgress, this.config.transitionBias);
 
     // Only animate if we're not already at the target
     const targetScroll = targetProgress * maxScroll;
@@ -204,6 +207,12 @@ export class ScrollGravity {
    */
   private animationStep = (): void => {
     if (this.state.type !== "animating") return;
+
+    // Cancel animation if user starts interacting
+    if (this.isUserTouching) {
+      this.transitionToIdle();
+      return;
+    }
 
     const { startTime, startScroll, targetScroll } = this.state;
     const elapsed = performance.now() - startTime;

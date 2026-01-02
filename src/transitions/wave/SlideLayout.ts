@@ -36,24 +36,20 @@ export class SlideLayout {
    * Gets all slide center progress values
    */
   getAllSlideCenters(): number[] {
-    const centers: number[] = [];
-    for (let i = 0; i < this.totalSlides; i++) {
-      centers.push(this.getSlideCenterProgress(i));
-    }
-    return centers;
+    return Array.from({ length: this.totalSlides }, (_, i) => this.getSlideCenterProgress(i));
   }
 
   /**
    * Finds the nearest slide center to a given progress value
    */
-  findNearestSlideCenter(currentProgress: number): number {
+  findSlideToSlideTowards(currentProgress: number, bias: number): number {
     const slideCenters = this.getAllSlideCenters();
 
-    let nearestCenter = slideCenters[0] ?? 0;
-    let minDistance = Math.abs(currentProgress - nearestCenter);
+    let nearestCenter: number = 0;
+    let minDistance = Infinity;
 
     for (const center of slideCenters) {
-      const distance = Math.abs(currentProgress - center);
+      const distance = Math.abs(currentProgress - center + bias);
       if (distance < minDistance) {
         minDistance = distance;
         nearestCenter = center;
