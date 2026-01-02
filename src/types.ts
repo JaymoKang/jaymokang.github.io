@@ -42,6 +42,8 @@ export interface WaveTransitionConfig {
   scrollIdleDelayMs: number;
   /** Duration in ms for the gravity snap animation */
   gravityAnimationDurationMs: number;
+  /** Bias for the gravity snap animation */
+  transitionBias: number;
 }
 
 /**

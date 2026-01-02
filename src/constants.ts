@@ -19,7 +19,7 @@ export const WAVE_ANIMATION = {
   END_POSITION_VW: -115,
   /** Total travel distance (vw) */
   TRAVEL_DISTANCE_VW: 285,
-  /** Progress point (0-1) at which opacity fade begins */
+  /** Progress point (0-1) at which wave opacity fade begins */
   OPACITY_FADE_START: 0.3,
 } as const;
 
@@ -39,8 +39,10 @@ export const WAVE_TRANSITION_CONFIG: WaveTransitionConfig = {
   undulationAmplitude: 4,
   /** Frequency of undulation (number of complete sine waves during transition) */
   undulationFrequency: 2.5,
-  /** Wave position (in vw) at which opacity changes begin */
+  /** Wave position (in vw) at which text opacity changes begin */
   opacityTriggerVw: 200,
+  /** Bias for the gravity snap animation. POsitive number means the gravity will snap to the next slide, negative number means the gravity will snap to the previous slide. */
+  transitionBias: 0.15,
   /** Per-wave configuration (front to back) */
   waves: [
     {

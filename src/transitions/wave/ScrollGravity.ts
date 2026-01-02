@@ -164,7 +164,7 @@ export class ScrollGravity {
 
     const currentProgress = clamp(scrollY / maxScroll, 0, 1);
     const targetProgress =
-      this.slideLayout.findNearestSlideCenter(currentProgress);
+      this.slideLayout.findSlideToSlideTowards(currentProgress, this.config.transitionBias);
 
     // Only animate if we're not already at the target
     const targetScroll = targetProgress * maxScroll;
