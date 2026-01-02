@@ -36,6 +36,29 @@ export class WavePositioner {
   /**
    * Updates the position and style of all wave elements
    */
+  /**
+   * Checks if the wave has reached a given horizontal position
+   * Encapsulates the positioning formula so other modules don't need to duplicate it
+   */
+  hasReachedPosition(withinProgress: number, positionVw: number): boolean {
+    const easedProgress = easeInOutCubic(clamp(withinProgress, 0, 1));
+    const wavePositionVw =
+      WAVE_ANIMATION.START_POSITION_VW -
+      easedProgress * WAVE_ANIMATION.TRAVEL_DISTANCE_VW;
+    return wavePositionVw <= positionVw;
+  }
+
+  /**
+   * Returns the eased progress value at which the wave reaches a given position
+   * Used by SlideVisibility to calculate fade timing
+   */
+  getEasedProgressAtPosition(positionVw: number): number {
+    return (
+      (WAVE_ANIMATION.START_POSITION_VW - positionVw) /
+      WAVE_ANIMATION.TRAVEL_DISTANCE_VW
+    );
+  }
+
   updatePositions(activeIndex: number, withinProgress: number): void {
     if (!this.waveTransitions) return;
     // Cache viewport dimensions once per frame to avoid recalculations

@@ -59,7 +59,13 @@ export class WaveTransitionController {
     // Initialize helper modules with shared SlideLayout
     this.segmentCalculator = new SegmentCalculator(slideLayout);
     this.wavePositioner = new WavePositioner(this.config);
-    this.slideVisibility = new SlideVisibility(this.config);
+
+    // Get the trigger eased progress from WavePositioner to avoid duplicating positioning logic
+    const triggerEasedProgress = this.wavePositioner.getEasedProgressAtPosition(
+      this.config.opacityTriggerVw,
+    );
+    this.slideVisibility = new SlideVisibility(this.config, triggerEasedProgress);
+
     this.scrollGravity = new ScrollGravity(slideLayout, this.config);
   }
 
@@ -173,6 +179,12 @@ export class WaveTransitionController {
       segmentInfo.withinTransitionProgress,
     );
 
+    // Query WavePositioner for whether the wave has reached the opacity trigger position
+    const hasReachedTrigger = this.wavePositioner.hasReachedPosition(
+      segmentInfo.withinTransitionProgress,
+      this.config.opacityTriggerVw,
+    );
+
     // Update slide visibility
     this.slideVisibility.updateVisibility(
       this.slideContents,
@@ -180,6 +192,7 @@ export class WaveTransitionController {
       segmentInfo.withinTransitionProgress,
       segmentInfo.isInDwell,
       segmentInfo.currentSlideIndex,
+      hasReachedTrigger,
     );
 
     this.ticking = false;

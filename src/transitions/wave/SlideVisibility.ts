@@ -1,6 +1,5 @@
 import type { WaveTransitionConfig } from "../../types";
-import { WAVE_ANIMATION } from "../../constants";
-import { clamp, easeInOutCubic, inverseEaseInOutCubic } from "../../utils/math";
+import { inverseEaseInOutCubic } from "../../utils/math";
 
 /**
  * Manages slide visibility and opacity during wave transitions
@@ -9,16 +8,18 @@ import { clamp, easeInOutCubic, inverseEaseInOutCubic } from "../../utils/math";
 export class SlideVisibility {
   private readonly leadingEdge: number;
   private readonly trailingEdge: number;
-  private readonly opacityTriggerVw: number;
+  /** The eased progress value at which opacity transitions begin */
+  private readonly triggerEasedProgress: number;
 
-  constructor(config: WaveTransitionConfig) {
+  constructor(config: WaveTransitionConfig, triggerEasedProgress: number) {
     this.leadingEdge = config.leadingEdge;
     this.trailingEdge = config.trailingEdge;
-    this.opacityTriggerVw = config.opacityTriggerVw;
+    this.triggerEasedProgress = triggerEasedProgress;
   }
 
   /**
    * Updates visibility/opacity for all slides based on current transition state
+   * @param hasReachedTrigger - Whether the wave has reached the opacity trigger position (from WavePositioner)
    */
   updateVisibility(
     slideContents: NodeListOf<HTMLElement>,
@@ -26,20 +27,8 @@ export class SlideVisibility {
     withinTransitionProgress: number,
     isInDwell: boolean,
     currentSlideIndex: number,
+    hasReachedTrigger: boolean,
   ): void {
-    // Calculate the eased progress threshold at which the wave reaches the trigger position
-    // Wave translateX = START_POSITION_VW - easedProgress * TRAVEL_DISTANCE_VW, so:
-    // easedProgress = (START_POSITION_VW - opacityTriggerVw) / TRAVEL_DISTANCE_VW
-    const triggerEasedProgress =
-      (WAVE_ANIMATION.START_POSITION_VW - this.opacityTriggerVw) /
-      WAVE_ANIMATION.TRAVEL_DISTANCE_VW;
-
-    // Calculate current eased progress
-    const easedProgress = easeInOutCubic(clamp(withinTransitionProgress, 0, 1));
-
-    // Check if we've reached the trigger point
-    const hasReachedTrigger = easedProgress >= triggerEasedProgress;
-
     // Calculate opacity for each slide
     slideContents.forEach((slide, index) => {
       const opacity = this.calculateSlideOpacity(
@@ -49,7 +38,6 @@ export class SlideVisibility {
         isInDwell,
         currentSlideIndex,
         hasReachedTrigger,
-        triggerEasedProgress,
       );
 
       // Apply opacity directly
@@ -74,7 +62,6 @@ export class SlideVisibility {
     isInDwell: boolean,
     currentSlideIndex: number,
     hasReachedTrigger: boolean,
-    triggerEasedProgress: number,
   ): number {
     if (isInDwell) {
       // In a dwell zone - only the current slide is visible
@@ -86,7 +73,6 @@ export class SlideVisibility {
       return this.calculateOutgoingOpacity(
         withinTransitionProgress,
         hasReachedTrigger,
-        triggerEasedProgress,
       );
     }
 
@@ -108,7 +94,6 @@ export class SlideVisibility {
   private calculateOutgoingOpacity(
     withinTransitionProgress: number,
     hasReachedTrigger: boolean,
-    triggerEasedProgress: number,
   ): number {
     // Delay fade until wave reaches trigger position
     if (!hasReachedTrigger) {
@@ -120,7 +105,7 @@ export class SlideVisibility {
     }
 
     // Remap: fade from 1 → 0 between trigger point and leadingEdge
-    const fadeStart = inverseEaseInOutCubic(triggerEasedProgress);
+    const fadeStart = inverseEaseInOutCubic(this.triggerEasedProgress);
     const fadeRange = this.leadingEdge - fadeStart;
 
     if (fadeRange <= 0) {
