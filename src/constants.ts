@@ -6,11 +6,11 @@ import type { WaveTransitionConfig } from "./types";
  */
 export const WAVE_ANIMATION = {
   /** Starting position off-screen right (vw) */
-  START_POSITION_VW: 100,
+  START_POSITION_VW: 170,
   /** Ending position off-screen left (vw) */
-  END_POSITION_VW: -120,
+  END_POSITION_VW: -115,
   /** Total travel distance (vw) */
-  TRAVEL_DISTANCE_VW: 220,
+  TRAVEL_DISTANCE_VW: 285,
   /** Progress point (0-1) at which opacity fade begins */
   OPACITY_FADE_START: 0.3,
 } as const;
@@ -49,7 +49,7 @@ export const WAVE_TRANSITION_CONFIG: WaveTransitionConfig = {
       opacity: 1,
       phaseOffset: Math.PI * 0.25,
       topOffset: 20,
-      startScaleFactor: 1.6,
+      startScaleFactor: 2.0,
       endScaleFactor: 0.0,
       slope: 10.0,
     },
@@ -58,7 +58,7 @@ export const WAVE_TRANSITION_CONFIG: WaveTransitionConfig = {
       opacity: 1,
       phaseOffset: Math.PI * 0.5,
       topOffset: 10,
-      startScaleFactor: 2.8,
+      startScaleFactor: 3.0,
       endScaleFactor: 0.0,
       slope: 20,
     },
