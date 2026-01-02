@@ -2,3 +2,4 @@ node_modules/
 .vite/
 dist/
 .cursor/
+.DS_Store

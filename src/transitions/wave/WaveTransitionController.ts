@@ -93,7 +93,7 @@ export class WaveTransitionController {
    * based on the waves array in config
    */
   private generateWaveElements(): void {
-    const { waves, waveSvgPath } = this.config;
+    const { waves, waveImagePath: waveSvgPath } = this.config;
 
     this.waveTransitions.forEach((container) => {
       // Clear any existing waves
