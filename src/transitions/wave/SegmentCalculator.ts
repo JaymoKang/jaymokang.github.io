@@ -19,46 +19,39 @@ export class SegmentCalculator {
   /**
    * Calculates which segment (dwell or transition) we're in based on scroll progress
    *
-   * Layout: [dwell0][trans0][dwell1][trans1][dwell2]
-   * With 3 slides and 2 transitions, we have 5 segments total
+   * Layout: [trans0][trans1]...[transN]
+   * With 3 slides and 2 transitions, progress maps to transitions:
+   * - [0, 0.5): transition 0 (slide 0 → 1)
+   * - [0.5, 1): transition 1 (slide 1 → 2)
+   * - 1.0: complete (on final slide)
+   *
+   * Visual "dwell" on slides is achieved at transition boundaries
+   * (withinTransitionProgress = 0 or 1)
    */
   calculate(overallProgress: number): SegmentInfo {
     const singleTransitionSize = this.slideLayout.getTransitionSize();
 
-    // Find which segment we're in
+    // Find which transition we're in
     let position = 0;
 
-    for (let i = 0; i < this.totalSlides; i++) {
-      // Check if in dwell for slide i
-      const dwellEnd = position;
-      if (overallProgress < dwellEnd) {
+    for (let i = 0; i < this.totalTransitions; i++) {
+      const transitionEnd = position + singleTransitionSize;
+
+      if (overallProgress < transitionEnd) {
+        const withinProgress =
+          (overallProgress - position) / singleTransitionSize;
         return {
-          isInDwell: true,
+          isInDwell: false,
           currentSlideIndex: i,
-          activeTransitionIndex: i - 1, // No active transition
-          withinTransitionProgress: 0,
+          activeTransitionIndex: i,
+          withinTransitionProgress: withinProgress,
         };
       }
-      position = dwellEnd;
 
-      // Check if in transition i (if there is one)
-      if (i < this.totalTransitions) {
-        const transitionEnd = position + singleTransitionSize;
-        if (overallProgress < transitionEnd) {
-          const withinProgress =
-            (overallProgress - position) / singleTransitionSize;
-          return {
-            isInDwell: false,
-            currentSlideIndex: i,
-            activeTransitionIndex: i,
-            withinTransitionProgress: withinProgress,
-          };
-        }
-        position = transitionEnd;
-      }
+      position = transitionEnd;
     }
 
-    // At the very end - last slide dwell
+    // At the very end - on final slide
     return {
       isInDwell: true,
       currentSlideIndex: this.totalSlides - 1,
