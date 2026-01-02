@@ -51,7 +51,7 @@ export class ScrollGravity {
   constructor(
     totalSlides: number,
     totalTransitions: number,
-    config: WaveTransitionConfig
+    config: WaveTransitionConfig,
   ) {
     this.config = config;
     this.slideLayout = new SlideLayout(totalSlides, totalTransitions);
@@ -166,8 +166,10 @@ export class ScrollGravity {
     }
 
     const currentProgress = clamp(scrollY / maxScroll, 0, 1);
-    const targetProgress =
-      this.slideLayout.findSlideToSlideTowards(currentProgress, this.config.transitionBias);
+    const targetProgress = this.slideLayout.findSlideToSlideTowards(
+      currentProgress,
+      this.config.transitionBias,
+    );
 
     // Only animate if we're not already at the target
     const targetScroll = targetProgress * maxScroll;
@@ -186,7 +188,7 @@ export class ScrollGravity {
    */
   private transitionToAnimating(
     startScroll: number,
-    targetScroll: number
+    targetScroll: number,
   ): void {
     this.state = {
       type: "animating",
