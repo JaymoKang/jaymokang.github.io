@@ -32,11 +32,11 @@ export const WAVE_TRANSITION_CONFIG: WaveTransitionConfig = {
   /** Frequency of undulation (number of complete sine waves during transition) */
   undulationFrequency: 2.5,
   /** Wave position (in vw) at which opacity changes begin */
-  opacityTriggerVw: 80,
+  opacityTriggerVw: 200,
   /** Per-wave configuration (front to back) */
   waves: [
     {
-      stagger: -0.48,
+      stagger: -1,
       opacity: 1,
       phaseOffset: Math.PI * 0,
       topOffset: 30,
@@ -45,7 +45,7 @@ export const WAVE_TRANSITION_CONFIG: WaveTransitionConfig = {
       slope: 1,
     },
     {
-      stagger: -0.24,
+      stagger: -0.5,
       opacity: 1,
       phaseOffset: Math.PI * 0.25,
       topOffset: 20,
@@ -64,7 +64,7 @@ export const WAVE_TRANSITION_CONFIG: WaveTransitionConfig = {
     },
   ],
   /** Delay before scroll gravity kicks in after user stops scrolling */
-  scrollIdleDelayMs: 0,
+  scrollIdleDelayMs: 50,
   /** Duration of the gravity snap animation */
   gravityAnimationDurationMs: 3000,
 };

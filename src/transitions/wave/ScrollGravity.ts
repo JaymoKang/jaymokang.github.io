@@ -13,6 +13,7 @@ export class ScrollGravity {
   private idleTimeout: ReturnType<typeof setTimeout> | null = null;
   private animationFrameId: number | null = null;
   private isAnimating = false;
+  private isUserTouching = false;
 
   // Animation state
   private animationStartTime = 0;
@@ -21,6 +22,10 @@ export class ScrollGravity {
 
   // Bound handler for user input detection
   private readonly handleUserInput: () => void;
+
+  // Bound handlers for touch/mouse state tracking
+  private readonly handleTouchStart: () => void;
+  private readonly handleTouchEnd: () => void;
 
   constructor(
     totalSlides: number,
@@ -33,6 +38,31 @@ export class ScrollGravity {
 
     // Bind handler for user input detection
     this.handleUserInput = this.onUserInput.bind(this);
+
+    // Bind handlers for touch/mouse state tracking
+    this.handleTouchStart = () => {
+      this.isUserTouching = true;
+    };
+    this.handleTouchEnd = () => {
+      this.isUserTouching = false;
+    };
+  }
+
+  /**
+   * Initializes touch/mouse state tracking listeners
+   */
+  init(): void {
+    window.addEventListener("touchstart", this.handleTouchStart, {
+      passive: true,
+    });
+    window.addEventListener("touchend", this.handleTouchEnd, { passive: true });
+    window.addEventListener("touchcancel", this.handleTouchEnd, {
+      passive: true,
+    });
+    window.addEventListener("mousedown", this.handleTouchStart, {
+      passive: true,
+    });
+    window.addEventListener("mouseup", this.handleTouchEnd, { passive: true });
   }
 
   /**
@@ -51,10 +81,22 @@ export class ScrollGravity {
   destroy(): void {
     this.cancelAnimation();
     this.removeInputListeners();
+    this.removeTouchStateListeners();
     if (this.idleTimeout !== null) {
       clearTimeout(this.idleTimeout);
       this.idleTimeout = null;
     }
+  }
+
+  /**
+   * Removes touch/mouse state tracking listeners
+   */
+  private removeTouchStateListeners(): void {
+    window.removeEventListener("touchstart", this.handleTouchStart);
+    window.removeEventListener("touchend", this.handleTouchEnd);
+    window.removeEventListener("touchcancel", this.handleTouchEnd);
+    window.removeEventListener("mousedown", this.handleTouchStart);
+    window.removeEventListener("mouseup", this.handleTouchEnd);
   }
 
   /**
@@ -74,6 +116,9 @@ export class ScrollGravity {
    * Called when scrolling has been idle for the configured delay
    */
   private onScrollIdle(): void {
+    // Don't trigger gravity while user is actively touching/clicking
+    if (this.isUserTouching) return;
+
     const scrollY = window.scrollY;
     const maxScroll =
       document.documentElement.scrollHeight - window.innerHeight;

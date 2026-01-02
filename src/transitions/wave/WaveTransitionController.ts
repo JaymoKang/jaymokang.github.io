@@ -86,6 +86,9 @@ export class WaveTransitionController {
     // Attach event listeners
     window.addEventListener("scroll", this.handleScroll, { passive: true });
     window.addEventListener("resize", this.handleResize);
+
+    // Initialize scroll gravity
+    this.scrollGravity.init();
   }
 
   /**
