@@ -38,6 +38,11 @@ export class WavePositioner {
     activeIndex: number,
     withinProgress: number,
   ): void {
+    // Cache viewport dimensions once per frame to avoid recalculations
+    // Converting vw/vh to pixels prevents jank when mobile browsers show/hide URL bar
+    const vw = window.innerWidth / 100;
+    const vh = window.innerHeight / 100;
+
     waveTransitions.forEach((transition, transitionIndex) => {
       // Use cached elements if available, fallback to DOM query
       const waveElements =
@@ -109,7 +114,10 @@ export class WavePositioner {
         }
 
         // Apply transform with dynamic scale
-        wave.style.transform = `translateX(${translateX}vw) translateY(${translateY}vh) scale(${dynamicScale})`;
+        // Use translate3d with rounded pixel values for GPU acceleration and to avoid subpixel jank
+        const x = Math.round(translateX * vw);
+        const y = Math.round(translateY * vh);
+        wave.style.transform = `translate3d(${x}px, ${y}px, 0) scale(${dynamicScale})`;
         wave.style.opacity = String(dynamicOpacity);
         wave.style.top = `${waveConfig.topOffset}%`;
       });
