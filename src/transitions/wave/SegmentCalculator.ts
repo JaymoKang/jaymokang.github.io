@@ -1,4 +1,5 @@
-import type { SegmentInfo, WaveTransitionConfig } from "../../types";
+import type { SegmentInfo } from "../../types";
+import { SlideLayout } from "./SlideLayout";
 
 /**
  * Calculates scroll segment information for wave transitions
@@ -7,14 +8,12 @@ import type { SegmentInfo, WaveTransitionConfig } from "../../types";
 export class SegmentCalculator {
   private readonly totalSlides: number;
   private readonly totalTransitions: number;
+  private readonly slideLayout: SlideLayout;
 
-  constructor(
-    totalSlides: number,
-    totalTransitions: number,
-    _config: WaveTransitionConfig
-  ) {
+  constructor(totalSlides: number, totalTransitions: number) {
     this.totalSlides = totalSlides;
     this.totalTransitions = totalTransitions;
+    this.slideLayout = new SlideLayout(totalSlides, totalTransitions);
   }
 
   /**
@@ -24,8 +23,7 @@ export class SegmentCalculator {
    * With 3 slides and 2 transitions, we have 5 segments total
    */
   calculate(overallProgress: number): SegmentInfo {
-    // Simplified: divide equally but scale by ratio
-    const singleTransitionSize = 1 / this.totalTransitions;
+    const singleTransitionSize = this.slideLayout.getTransitionSize();
 
     // Find which segment we're in
     let position = 0;

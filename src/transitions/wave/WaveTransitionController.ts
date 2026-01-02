@@ -52,8 +52,7 @@ export class WaveTransitionController {
     // Initialize helper modules
     this.segmentCalculator = new SegmentCalculator(
       this.totalSlides,
-      this.totalTransitions,
-      this.config
+      this.totalTransitions
     );
     this.wavePositioner = new WavePositioner(this.config);
     this.slideVisibility = new SlideVisibility(this.config);
@@ -112,6 +111,9 @@ export class WaveTransitionController {
         container.appendChild(img);
       });
     });
+
+    // Cache wave elements for efficient updates during scroll
+    this.wavePositioner.cacheWaveElements(this.waveTransitions);
   }
 
   /**

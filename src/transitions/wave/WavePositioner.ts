@@ -11,10 +11,23 @@ export class WavePositioner {
   private readonly undulationAmplitude: number;
   private readonly undulationFrequency: number;
 
+  // Cached wave elements per transition (avoids DOM queries on every frame)
+  private cachedWaveElements: HTMLElement[][] = [];
+
   constructor(config: WaveTransitionConfig) {
     this.waves = config.waves;
     this.undulationAmplitude = config.undulationAmplitude;
     this.undulationFrequency = config.undulationFrequency;
+  }
+
+  /**
+   * Caches wave elements after they are generated
+   * Call this once after creating wave elements in the DOM
+   */
+  cacheWaveElements(waveTransitions: NodeListOf<HTMLElement>): void {
+    this.cachedWaveElements = Array.from(waveTransitions).map((transition) =>
+      Array.from(transition.querySelectorAll<HTMLElement>(".wave"))
+    );
   }
 
   /**
@@ -26,7 +39,10 @@ export class WavePositioner {
     withinProgress: number
   ): void {
     waveTransitions.forEach((transition, transitionIndex) => {
-      const waveElements = transition.querySelectorAll<HTMLElement>(".wave");
+      // Use cached elements if available, fallback to DOM query
+      const waveElements =
+        this.cachedWaveElements[transitionIndex] ||
+        Array.from(transition.querySelectorAll<HTMLElement>(".wave"));
 
       waveElements.forEach((wave, waveIndex) => {
         const waveConfig =

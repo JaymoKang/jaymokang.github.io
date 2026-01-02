@@ -1,6 +1,14 @@
 import type { WaveTransitionConfig } from "./types";
 
 /**
+ * Scroll gravity animation constants
+ */
+export const SCROLL_GRAVITY = {
+  /** Minimum distance (pixels) to trigger snap animation - avoids micro-animations */
+  MIN_SNAP_DISTANCE_PX: 1,
+} as const;
+
+/**
  * Animation constants for wave positioning (in viewport units)
  * Note: START_POSITION_VW must match the CSS initial transform in styles.css
  */
