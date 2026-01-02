@@ -31,7 +31,7 @@ export const WAVE_ANIMATION = {
  */
 export const WAVE_TRANSITION_CONFIG: WaveTransitionConfig = {
   /** Path to the wave SVG asset */
-  waveSvgPath: "/wave-pattern.svg",
+  waveImagePath: "/wave.webp",
   /** When leading wave covers the center of the viewport */
   leadingEdge: 0.6,
   /** When trailing wave reveals the center of the viewport */
@@ -52,7 +52,7 @@ export const WAVE_TRANSITION_CONFIG: WaveTransitionConfig = {
       stagger: -1,
       opacity: 1,
       phaseOffset: Math.PI * 0,
-      topOffset: 30,
+      topOffset: 20,
       startScaleFactor: 1.0,
       endScaleFactor: 0.0,
       slope: 1,
@@ -61,17 +61,17 @@ export const WAVE_TRANSITION_CONFIG: WaveTransitionConfig = {
       stagger: -0.5,
       opacity: 1,
       phaseOffset: Math.PI * 0.25,
-      topOffset: 20,
-      startScaleFactor: 2.0,
+      topOffset: 10,
+      startScaleFactor: 1.5,
       endScaleFactor: 0.0,
       slope: 10.0,
     },
     {
       stagger: 0.0,
       opacity: 1,
-      phaseOffset: Math.PI * 0.5,
-      topOffset: 10,
-      startScaleFactor: 3.0,
+      phaseOffset: Math.PI * 0.0,
+      topOffset: -5,
+      startScaleFactor: 2.5,
       endScaleFactor: 0.0,
       slope: 20,
     },

@@ -23,7 +23,7 @@ export interface WaveConfig {
  */
 export interface WaveTransitionConfig {
   /** Path to the wave SVG asset */
-  waveSvgPath: string;
+  waveImagePath: string;
   /** Progress threshold when leading wave covers center (0-1) */
   leadingEdge: number;
   /** Progress threshold when trailing wave reveals center (0-1) */
