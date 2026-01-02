@@ -1,7 +1,7 @@
 import type { WaveTransitionConfig, WaveTransitionElements } from "../../types";
 import { WAVE_TRANSITION_CONFIG } from "../../constants";
 import { addWindowListeners } from "../../utils/events";
-import { clamp } from "../../utils/math";
+import { clamp, getMaxScroll } from "../../utils/math";
 import { SegmentCalculator } from "./SegmentCalculator";
 import { ScrollGravity } from "./ScrollGravity";
 import { SlideLayout } from "./SlideLayout";
@@ -159,8 +159,7 @@ export class WaveTransitionController {
    */
   private updateTransitions(): void {
     const scrollY = window.scrollY;
-    const maxScroll =
-      document.documentElement.scrollHeight - window.innerHeight;
+    const maxScroll = getMaxScroll();
     const overallProgress = clamp(scrollY / maxScroll, 0, 1);
 
     this.updateProgressBar(overallProgress);

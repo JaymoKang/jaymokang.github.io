@@ -9,6 +9,13 @@ export function clamp(value: number, min: number, max: number): number {
 }
 
 /**
+ * Returns the maximum scrollable distance in pixels
+ */
+export function getMaxScroll(): number {
+  return document.documentElement.scrollHeight - window.innerHeight;
+}
+
+/**
  * Cubic easing function for smooth animation
  * Creates an ease-in-out effect with acceleration at the start and deceleration at the end
  */

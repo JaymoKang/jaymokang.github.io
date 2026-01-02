@@ -1,7 +1,7 @@
 import type { WaveTransitionConfig } from "../../types";
 import { SCROLL_GRAVITY } from "../../constants";
 import { addWindowListeners, type EventListenerSpec } from "../../utils/events";
-import { clamp, easeInOutCubic } from "../../utils/math";
+import { clamp, easeInOutCubic, getMaxScroll } from "../../utils/math";
 import { SlideLayout } from "./SlideLayout";
 
 /**
@@ -157,8 +157,7 @@ export class ScrollGravity {
     }
 
     const scrollY = window.scrollY;
-    const maxScroll =
-      document.documentElement.scrollHeight - window.innerHeight;
+    const maxScroll = getMaxScroll();
 
     // Don't do anything if there's nowhere to scroll
     if (maxScroll <= 0) {
