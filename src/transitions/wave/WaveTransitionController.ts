@@ -4,6 +4,7 @@ import { clamp } from "../../utils/math";
 import { SegmentCalculator } from "./SegmentCalculator";
 import { WavePositioner } from "./WavePositioner";
 import { SlideVisibility } from "./SlideVisibility";
+import { ScrollGravity } from "./ScrollGravity";
 
 /**
  * Controls scroll-driven wave transitions between content slides
@@ -27,6 +28,7 @@ export class WaveTransitionController {
   private readonly segmentCalculator: SegmentCalculator;
   private readonly wavePositioner: WavePositioner;
   private readonly slideVisibility: SlideVisibility;
+  private readonly scrollGravity: ScrollGravity;
 
   private ticking = false;
   private resizeTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -55,6 +57,11 @@ export class WaveTransitionController {
     );
     this.wavePositioner = new WavePositioner(this.config);
     this.slideVisibility = new SlideVisibility(this.config);
+    this.scrollGravity = new ScrollGravity(
+      this.totalSlides,
+      this.totalTransitions,
+      this.config
+    );
 
     // Bind handlers
     this.handleScroll = this.onScroll.bind(this);
@@ -114,12 +121,17 @@ export class WaveTransitionController {
     if (this.resizeTimeout !== null) {
       clearTimeout(this.resizeTimeout);
     }
+
+    this.scrollGravity.destroy();
   }
 
   /**
    * Scroll event handler with RAF throttling
    */
   private onScroll(): void {
+    // Notify scroll gravity of scroll activity
+    this.scrollGravity.onScroll();
+
     if (!this.ticking) {
       requestAnimationFrame(() => this.updateTransitions());
       this.ticking = true;

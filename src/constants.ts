@@ -63,4 +63,8 @@ export const WAVE_TRANSITION_CONFIG: WaveTransitionConfig = {
       slope: 20,
     },
   ],
+  /** Delay before scroll gravity kicks in after user stops scrolling */
+  scrollIdleDelayMs: 0,
+  /** Duration of the gravity snap animation */
+  gravityAnimationDurationMs: 3000,
 };
