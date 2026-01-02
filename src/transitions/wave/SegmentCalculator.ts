@@ -1,4 +1,4 @@
-import type { SegmentInfo, WaveTransitionConfig } from '../../types';
+import type { SegmentInfo, WaveTransitionConfig } from "../../types";
 
 /**
  * Calculates scroll segment information for wave transitions
@@ -8,24 +8,28 @@ export class SegmentCalculator {
   private readonly totalSlides: number;
   private readonly totalTransitions: number;
 
-  constructor(totalSlides: number, totalTransitions: number, _config: WaveTransitionConfig) {
+  constructor(
+    totalSlides: number,
+    totalTransitions: number,
+    _config: WaveTransitionConfig
+  ) {
     this.totalSlides = totalSlides;
     this.totalTransitions = totalTransitions;
   }
 
   /**
    * Calculates which segment (dwell or transition) we're in based on scroll progress
-   * 
+   *
    * Layout: [dwell0][trans0][dwell1][trans1][dwell2]
    * With 3 slides and 2 transitions, we have 5 segments total
    */
   calculate(overallProgress: number): SegmentInfo {
     // Simplified: divide equally but scale by ratio
     const singleTransitionSize = 1 / this.totalTransitions;
-    
+
     // Find which segment we're in
     let position = 0;
-    
+
     for (let i = 0; i < this.totalSlides; i++) {
       // Check if in dwell for slide i
       const dwellEnd = position;
@@ -38,12 +42,13 @@ export class SegmentCalculator {
         };
       }
       position = dwellEnd;
-      
+
       // Check if in transition i (if there is one)
       if (i < this.totalTransitions) {
         const transitionEnd = position + singleTransitionSize;
         if (overallProgress < transitionEnd) {
-          const withinProgress = (overallProgress - position) / singleTransitionSize;
+          const withinProgress =
+            (overallProgress - position) / singleTransitionSize;
           return {
             isInDwell: false,
             currentSlideIndex: i,
@@ -54,7 +59,7 @@ export class SegmentCalculator {
         position = transitionEnd;
       }
     }
-    
+
     // At the very end - last slide dwell
     return {
       isInDwell: true,
@@ -64,4 +69,3 @@ export class SegmentCalculator {
     };
   }
 }
-

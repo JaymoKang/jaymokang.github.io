@@ -75,8 +75,9 @@ export class ScrollGravity {
    */
   private onScrollIdle(): void {
     const scrollY = window.scrollY;
-    const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-    
+    const maxScroll =
+      document.documentElement.scrollHeight - window.innerHeight;
+
     // Don't do anything if there's nowhere to scroll
     if (maxScroll <= 0) return;
 
@@ -95,7 +96,7 @@ export class ScrollGravity {
 
   /**
    * Finds the nearest slide center progress value
-   * 
+   *
    * Slide centers are at:
    * - Slide 0: progress = 0
    * - Slide N: progress = N / totalTransitions (after transition N-1)
@@ -103,7 +104,7 @@ export class ScrollGravity {
   private findNearestSlideCenter(currentProgress: number): number {
     // Generate all slide center positions
     const slideCenters: number[] = [];
-    
+
     for (let i = 0; i < this.totalSlides; i++) {
       // Slide i is fully visible after transition i-1 completes
       // Transition size is 1/totalTransitions
@@ -194,7 +195,9 @@ export class ScrollGravity {
    */
   private addInputListeners(): void {
     window.addEventListener("wheel", this.handleUserInput, { passive: true });
-    window.addEventListener("touchstart", this.handleUserInput, { passive: true });
+    window.addEventListener("touchstart", this.handleUserInput, {
+      passive: true,
+    });
     window.addEventListener("keydown", this.handleUserInput, { passive: true });
   }
 
@@ -207,4 +210,3 @@ export class ScrollGravity {
     window.removeEventListener("keydown", this.handleUserInput);
   }
 }
-

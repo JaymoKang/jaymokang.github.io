@@ -66,4 +66,3 @@ export interface WaveTransitionElements {
   waveTransitions: NodeListOf<HTMLElement>;
   progressFill: HTMLElement | null;
 }
-
