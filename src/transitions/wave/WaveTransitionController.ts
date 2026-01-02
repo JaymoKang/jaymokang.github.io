@@ -110,8 +110,8 @@ export class WaveTransitionController {
       });
     });
 
-    // Cache wave elements for efficient updates during scroll
-    this.wavePositioner.cacheWaveElements(this.waveTransitions);
+    // Set wave transitions for the positioner to manage
+    this.wavePositioner.setWaveTransitions(this.waveTransitions);
   }
 
   /**
@@ -169,7 +169,6 @@ export class WaveTransitionController {
 
     // Update wave positions
     this.wavePositioner.updatePositions(
-      this.waveTransitions,
       segmentInfo.activeTransitionIndex,
       segmentInfo.withinTransitionProgress,
     );
