@@ -74,6 +74,17 @@ body {
   pointer-events: auto;
 }
 
+.slide-content a {
+  color: var(--color-wave);
+  text-decoration: none;
+  transition: var(--transition-base);
+}
+
+.slide-content a:hover {
+  color: var(--color-seafoam);
+  text-decoration: underline;
+}
+
 /* Hero slide - full height flexbox layout */
 .slide-content[data-slide="0"] {
   height: 60vh;
