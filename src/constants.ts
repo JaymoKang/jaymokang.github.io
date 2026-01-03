@@ -55,7 +55,7 @@ export const WAVE_TRANSITION_CONFIG: WaveTransitionConfig = {
       topOffset: 20,
       startScaleFactor: 1.0,
       endScaleFactor: 0.0,
-      slope: 1,
+      slope: 10,
     },
     {
       stagger: -0.5,
@@ -64,7 +64,7 @@ export const WAVE_TRANSITION_CONFIG: WaveTransitionConfig = {
       topOffset: 10,
       startScaleFactor: 1.5,
       endScaleFactor: 0.0,
-      slope: 10.0,
+      slope: 20.0,
     },
     {
       stagger: 0.0,
@@ -73,7 +73,7 @@ export const WAVE_TRANSITION_CONFIG: WaveTransitionConfig = {
       topOffset: -5,
       startScaleFactor: 2.5,
       endScaleFactor: 0.0,
-      slope: 20,
+      slope: 30,
     },
   ],
   /** Delay before scroll gravity kicks in after user stops scrolling */
